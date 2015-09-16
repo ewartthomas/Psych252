@@ -11,11 +11,11 @@ Thank you to Paul Thibodeau (2009), 252 instructors in 2010 and 2011, Mike Frank
 
 ### Advanced R syntax
 
-A new library `dplyr` has now become the standard way of interacting with small 'long-form' datasets in R. `dplyr` follows the same general convention as the `ggplot()` function that you're now already familiar with, in that you take an object and 'layer' your functions on top of it. In using dplyr you will want to refer often to the dplyr Data Wrangling Cheatsheet (https://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf). Here's a functional example:
+A new library `dplyr` has now become the standard way of interacting with small 'long-form' datasets in R. `dplyr` follows the same general convention as the `ggplot()` function that you're now already familiar with, in that you take an object and 'layer' your functions on top of it. In using dplyr you will want to refer often to the [dplyr Data Wrangling Cheatsheet](https://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf). Here's a functional example:
 
 First let's load in some data.
 
-This dataset is more complicated than the ones we've previously dealt with because it that has both *between*- and *within*-subject factors. Here, attention (`attnr`) is a *between-subjects* factor with 2 levels, `attnr` = 'divided' or 'focused'; and there are 10 subjects (`subidr`) at each level. Also, each subject solved anagrams at 3 levels of difficulty, indexed by the number of possible solutions (`num` = 1, 2, or 3; a *within-subjects* variable). Subjectâ€™s score at each level of `num` is noted.  This is a *repeated measures design*.  **How does score depend on attn and num?**
+This dataset is more complicated than the ones we've previously dealt with because it that has both *between*- and *within*-subject factors. Here, attention (`attnr`) is a *between-subjects* factor with 2 levels, `attnr` = 'divided' or 'focused'; and there are 10 subjects (`subidr`) at each level. Also, each subject solved anagrams at 3 levels of difficulty, indexed by the number of possible solutions (`num` = 1, 2, or 3; a *within-subjects* variable). Subject's score at each level of `num` is noted.  This is a *repeated measures design*.  **How does score depend on attn and num?**
 
 
 ```{r load_kv0}
@@ -31,14 +31,14 @@ library(tidyr)
 
 As you can see, this dataframe is in short-form, meaning that the within-subject observations are displayed in separate columns, and each subject occupies a single row. 
 
-To convert this short-form data to long-form (where columns become rows) we can use the "gather" function. The num1, num2, and num3 variables are actually values that were observed for a given variable. 
+To convert this short-form data to long-form (where columns become rows) we can use the `gather()` function. The num1, num2, and num3 variables are actually values that were observed for a given variable. 
 
 ```{r}
 data_long <- data_short %>%
   gather("variable","value",3:5)
 ```
 
-Notice that we did what is called "piping", by using the `%>%` pipe operator to pass the data_short dataframe in to the gather function. Piping is similar to layering in `ggplot()`. 
+Notice that we did what is called **piping**, by using the `%>%` pipe operator to pass the data_short dataframe in to the gather function. Piping is similar to layering in `{ggplot()}`. 
 
 Now, this dataframe is NOT intuitive right now. What do the names mean? Let's continue the piping expression above and add an additional step to rename the un-intuitive variables:
 
@@ -50,7 +50,7 @@ data_long <- data_short %>%
 
 ### Setting up variables
 
-Since the levels of 'num' were created from the original column names (i.e., num1, num2, num3), R interprets the 'num' variable as a factor. However, we want to treat num as a quantitative variable, and need to force num to be numeric. We also want the subject id ('id') to be a factor:
+Since the levels of `num` were created from the original column names (i.e., num1, num2, num3), R interprets the 'num' variable as a factor. However, we want to treat num as a quantitative variable, and need to force num to be numeric. We also want the subject id (`id`) to be a factor:
 
 ```{r forcevars_dl}
 data_long <- data_long %>%
@@ -58,7 +58,7 @@ data_long <- data_long %>%
   select(-solutions,-sid)
 ```
 
-We also need to rescale 'id' to 1:10 within each level of `attn`, since the subject id ('id') is 11:20 when attn is 'focused'. So we need to select only these values of 'id', and transform them to 1:10. This requires creating a new variable, cond.id, in the dataframe, dl.
+We also need to rescale `id` to 1:10 within each level of `attn`, since the subject id (`id`) is 11:20 when attn is 'focused'. So we need to select only these values of `id`, and transform them to 1:10. This requires creating a new column, `cond.id`, in the dataframe, `dl`.
 
 ```{r rescaleid_dl}
 data_long$cond.id = as.numeric(data_long$id)
@@ -68,7 +68,7 @@ data_long$cond.id = factor(data_long$cond.id)
 
 ### Advanced ggplot()
 
-For the first plot, we want to examine the relationship between the number variable ('num') and the subjects' scores. We'll also look at each subject's data separately (id 1-10 for each attn condition) using the `facet` option. With facets, `facets = Y ~ X` means you want the 'score vs num' plots to be arrayed vertically (y-axis) by levels of Y, and horizontally (x-axis) by levels of X. This is analogous to formulas for plots where the item to the left of the `~` is on the y axis and the item on the right is on the x axis.  You can also do, `facets = Y ~ .`, which will array 'frames' vertically by Y-levels and, in each frame, plot 'score vs num' at each level of X. Similarly, `facets = . ~ X` will array 'frames' horizontally by X-levels and, in each frame, plot 'score vs num' at each level of Y.
+For the first plot, we want to examine the relationship between the number variable (`num`) and the subjects' scores. We'll also look at each subject's data separately (`id` 1-10 for each `attn` condition) using the `facet` option. With facets, `facets = Y ~ X` means you want the 'score vs num' plots to be arrayed vertically (y-axis) by levels of Y, and horizontally (x-axis) by levels of X. This is analogous to formulas for plots where the item to the left of the `~` is on the y axis and the item on the right is on the x axis.  You can also do, `facets = Y ~ .`, which will array 'frames' vertically by Y-levels and, in each frame, plot 'score vs num' at each level of X. Similarly, `facets = . ~ X` will array 'frames' horizontally by X-levels and, in each frame, plot 'score vs num' at each level of Y.
 
 For more infomation, we'll overlay the data with a least-squares fit to the points:
 
@@ -87,7 +87,6 @@ ggplot(data_long,aes(x=nsols,y=solved)) +
 Breaking down by subject, within each level of attn, is also doable with `qplot()` (the x-axis labeling is poor though). Using the layer `geom_line` instead of `geom_point` joins the points by lines and suppresses the points:
 
 ```{r qplot_num_on_score_facet_levels, fig.width=7, fig.height=4}
-
 ggplot(data_long,aes(x=nsols,y=solved,color=cond.id)) +
   geom_line() +
   facet_grid(. ~ attention) +
@@ -97,7 +96,7 @@ ggplot(data_long,aes(x=nsols,y=solved,color=cond.id)) +
 Regression: simple and multiple
 -------------------------------
 
-Now let's attach the rtw.table dataframe and examine the relationship between unemployment rate ('Urate') and cost of living ('COL') using the lm() function. This is an example of what we are calling a "simple" regression, as there is only a single *independent* or *predictor* variable (which is what appears on the right side of the `~` in the function).
+Now let's attach the rtw.table dataframe and examine the relationship between unemployment rate (`Urate`) and cost of living (`COL`) using the `lm()` function. This is an example of what we are calling a "simple" regression, as there is only a single *independent* or *predictor* variable (which is what appears on the right side of the `~` in the function).
 
 ```{r rtw_load}
 rtw.table <- read.csv("http://stanford.edu/class/psych252/data/P005.txt", sep='\t')
@@ -170,7 +169,7 @@ summary(rs_m)
 
 Here we can see that the right to work law affects cost of living when controlling for the other factors. The presence of a right to work low corresponds with a lower cost of living. Further, when controlling for Income, PD, and the right to work law, unemployment rate also explains a signficant amount of unique variance in cost of living; more specifically, as unemployment rate increases, cost of living decreases.
 
-We can also plot the different effects by using a nice package, "effects", combined with the standard plot function.
+We can also plot the different effects by using a nice package, `{effects}`, combined with the standard plot function.
 
 ```{r}
 #install.packages('effects')
@@ -226,7 +225,7 @@ ggplot(data=rtwl_plong, aes(x=rtwl,y=CostOfLiving,fill=rtwl)) +
 Additive & Interactive Models
 -----------------------------------
 
-Returning to the initial data, rtw.table, we saw that COL depends on RTWL. Does it also depend on Income? To get a general idea, we can look at the data by plotting income and COL, as well as the linear line of best fit in red:
+Returning to the initial data, `rtw.table`, we saw that COL depends on RTWL. Does it also depend on Income? To get a general idea, we can look at the data by plotting income and COL, as well as the linear line of best fit in red:
 
 ```{r plot_col_on_income, fig.width=4, fig.height=3}
 ggplot(data=rtw.table, aes(Income,CostOfLiving)) +
@@ -249,7 +248,7 @@ rtw.table <- rtw.table %>%
   mutate(IncomeCat=factor(IncomeCat,labels=c("low","high")),RTWL=factor(RTWL,labels=c("No","Yes")))
 ```
 
-Now we'll print a *cross-tabulation* of RTWL and Incomecat to get an idea of how many cities fall into each group:
+Now we'll print a **cross-tabulation** of RTWL and Incomecat to get an idea of how many cities fall into each group:
 
 ```{r crosstab_rtw.table}
 table(rtw.table$IncomeCat, rtw.table$RTWL)
@@ -280,7 +279,7 @@ ggplot(data=rtw.table, aes(x=RTWL,y=CostOfLiving,color=IncomeCat,group=IncomeCat
   theme_bw()
 ```
 
-Some notes: we have to tell ggplot that each group consists of only one mean observation by forcing group=IncomeCat, otherwise ggplot() complains that each group consists of a single observation. Also note the use of the color brewer scale to adjust the line colors, see here for a list of color palettes: http://www.lgbmi.com/wordpress/wp-content/uploads/2012/08/colorbrewer_names.png. Try replacing the color=IncomeCat with linetype=IncomeCat and see what happens.
+Some notes: we have to tell ggplot that each group consists of only one mean observation by forcing group=IncomeCat, otherwise ggplot() complains that each group consists of a single observation. Also note the use of the color brewer scale to adjust the line colors, see [here](http://www.lgbmi.com/wordpress/wp-content/uploads/2012/08/colorbrewer_names.png) for a list of color palettes. Try replacing the color=IncomeCat with linetype=IncomeCat and see what happens.
 
 By looking at this plot, we can see that when the income is high, the effect of RTWL on COL is small. However, when income is low, cost of living is lower if there is a right to work law.
 
@@ -306,7 +305,7 @@ summary(exer) # double check formatting
 
 ### Plot exercise data
 
-Let's try plotting the exercise data. Again, this is an "interaction" that we're looking for, so we have to plot the data by two variables (pulse over time), but also split the data by a third grouping variable, in this case the id variable.
+Let's try plotting the exercise data. Again, this is an **interaction** that we're looking for, so we have to plot the data by two variables (`pulse` over `time`), but also split the data by a third grouping variable, in this case the `id` variable.
 
 ```{r qplot_tim_on_pulse_facets, fig.width=7, fig.height=5}
 ggplot(data=exer, aes(x=time, y=pulse, color=id)) +
