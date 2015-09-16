@@ -104,6 +104,8 @@ print(a)
 Using functions
 ---------------
 
+Check out the helpful [R cheatsheet](http://stanford.edu/class/psych252/cheatsheets/index.html#r-cheatsheet) on the class site to see a list of some commonly used functions!
+
 Another core concept involves using *functions* to perform more complex operations. Functions in R work like they do in mathematics: they specify a transformation from one or more inputs (called *arguments* or *parameters*) to one or more outputs (or *return values*). You *call* a function by writing its name followed by parentheses, with any arguments going inside the parentheses. We already saw one example of this with the `print()` function above. The `cat()` function is similar, but it converts its arguments into characters first. There are also some basic mathematical functions built into R that operate on numbers:
 
 ```{r math_functions}
@@ -260,6 +262,8 @@ df
 
 ### Example: Working with data frames
 
+Check out the [R cheatsheet](http://stanford.edu/class/psych252/cheatsheets/index.html#r-cheatsheet) on the class site for some common dataset manipulations!
+
 To illustrate the basic process of importing and exploring a new data set, we turn to an example dataset stored in the file `earlydeaths.csv`, which we have hosted for you on the class website. In this dataset, each juvenile death in the County (*n* = 350) is labeled by the year it occurred (`time` = 1, 2 or 3; corresponding to 1990-91, 1992-93, 1994-95), and by the cause of death (`cause` = "maltreatment" or "other"). 
 
 For every dataset we encounter in this course, we will ask two broad questions: (1) "What relationships among variables would be interesting to study?" and (2) "What mechanism (causal or otherwise) might give rise to those relationships?" For this dataset, for example, we might be interested in the relationship between time and cause of death. One mechanism that might lead to an increasing relationship is an increase in maltreatment *cases* over time, many of which result in death. This would be a news-worthy result! On the other hand, maybe a larger overall population could be the mechanism: this would lead to an increase in maltreatment deaths over time (simply because more people are treated), but also an increase in other kinds of deaths. This would not be as news-worthy. Once these questions have been posed, we can select appropriate statistical tests to conduct. Otherwise, the results are not particularly meaningful. 
@@ -270,7 +274,7 @@ Let's start by loading in the data:
 df_death = read.csv("http://stanford.edu/class/psych252/data/earlydeaths.csv")
 ```
 
-When you load in a dataset, you'll want to explore it a bit so you get a feel for the kind of data it contains (and to ensure that it was loaded properly). Some of the functions you'll find yourself using for this purpose are `str()`, `head()`, and `summary()`. These all do somewhat different things, which you can likely deduce from their output and help files:
+When you load in a dataset, you'll want to explore it a bit so you get a feel for the kind of data it contains (and to ensure that it was loaded properly). It can also be helpful to *visualize* structure in your data frames. For this, you can use some of the functions demonstrated on the [Plotting Examples page](http://stanford.edu/class/psych252/plots/index.html) of the class site! Additionally, some of the basic functions you'll find yourself using to explore the data are `str()`, `head()`, and `summary()`. These all do somewhat different things, which you can likely deduce from their output and help files:
 
 ```{r explore_deaths}
 str(df_death)
@@ -297,7 +301,11 @@ Take a moment to continue exploring this dataset. What else can you learn about 
 
 ### Basic Regression and Plotting
 
+For some plotting examples (and code), check out the [Plotting Examples page](http://stanford.edu/class/psych252/plots/index.html) on the class site!
+
 We're now going to practice, very briefly, plotting in R. There are many packages available for this purpose and they all have advantages and disadvantages. `ggplot()` is a good place to start and is hopefully intuitive to understand.
+
+Again, check out the [R cheatsheet](http://stanford.edu/class/psych252/cheatsheets/index.html#r-cheatsheet) on the class site for some `ggplot`-ing basics!
 
 If this is your first time using R you'll probably need to run the install code first. Otherwise skip this step.
 
@@ -311,7 +319,7 @@ Let's first load the `ggplot()` package so that we can use it:
 library(ggplot2)
 ```
 
-Now lets load one of the class datasets and see what we can do with it.
+Now lets load one of the class datasets and see what we can do with it. Note that we're reading in the dataset from the class site; additional info about the datasets (e.g., the fields/columns in the data file) is available on the [Course Datasets page](http://stanford.edu/class/psych252/data/index.html), where you can also directly download the data.
 
 ```{r}
 scale = read.csv('http://stanford.edu/class/psych252/_downloads/dataset_scale.csv')
