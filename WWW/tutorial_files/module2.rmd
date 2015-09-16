@@ -9,19 +9,13 @@ output:
 
 Thank you to Paul Thibodeau (2009), 252 instructors in 2010 and 2011, Mike Frank, Benoit Monin, and Ewart Thomas for the original tutorials. Michael Waskom and Steph Gagnon for the conversion to [R Markdown](http://www.rstudio.com/ide/docs/r_markdown). The most recent iteration was created in 2015 by Dan Birman, Natalia Velez, Kara Weisman, and Robert Hawkins.
 
-
-```{r}
-library(ggplot2)
-```
-
-
 ### Welcome!
 
 Welcome to Module 2! If you are in class 1 the second module is designed to get you up to speed on some statistical concepts, and then to let you free on some datasets. If you are in class 2 this first module is a crash course in R!
 
 ### A Reminder about DataFrames
 
-In R we almost exclusively use "DataFrames" to organize our data. Here's an example dataframe and some useful functions for investigating what's on the inside.
+In R we almost exclusively use "DataFrames" to organize our data. Here's an example dataframe and some useful functions for investigating what's on the inside. Some of these basic functions for manipulating/exploring dataframes can be found in the [R Cheatsheet](http://stanford.edu/class/psych252/cheatsheets/index.html#r-cheatsheet) on the class website!
 
 ```{r}
 mydata = data.frame(x=c(1,2,3,4,5),y=c(25,94,32,45,88))
@@ -47,6 +41,8 @@ Manipulating Dataframes
 To begin, we'll load in a simple data file that we'll use in 252, and store it as a [dataframe](http://www.r-tutor.com/r-introduction/data-frame) named "df_survey".
 
 This data file is called `fieldsimul1.csv`. Here, likely voters (*n* = 240) were surveyed, and report their age (`age`), and level of optimism (`optmism`), as well as other variables. **Is age related to optimism?**
+
+We typically will be loading in dataframes directly from the class website. More info about the dataframes (e.g., fields) can be found on the [Course Datasets page](http://stanford.edu/class/psych252/data/index.html) of the class site, where you can also download the dataset directly!
 
 ```{r load df_survey}
 df_survey = read.csv('http://stanford.edu/class/psych252/data/fieldsimul1.csv')
@@ -90,11 +86,18 @@ str(df_survey)
 Basic Plotting
 --------------
 
+Some examples/code for plotting can be found on the [Plotting Examples page](http://stanford.edu/class/psych252/plots/index.html) of the class website. Additional tips for plotting with the `{ggplot2}` package can be found in the [R Cheatsheet](http://stanford.edu/class/psych252/cheatsheets/index.html#r-cheatsheet)!
+
 If you're starting in Module 2 directly we are using a package called `ggplot()` for plotting, call `install.packages('ggplot2')` to get the package, and use it as shown below. Note the "layered" structure, where we add the boxplot on top of the base object.
+
+First, we load in the package `{ggplot2}`:
+```{r}
+library(ggplot2)
+```
 
 Let's take a look at the factor we created, by plotting age category as a function of age.
 
-```{r plot_agecat, fig.width=7, fig.height=6}
+```{r plot_agecat, fig.width=6, fig.height=5}
 ggplot(data=df_survey) +
   geom_boxplot(aes(x=agecat,y=age))
 ```
@@ -139,10 +142,14 @@ ggplot(data=df_survey,aes(x=age,y=optmism)) +
 
 # If you learn nothing else today, learn this: Search!
 
-We'll keep reminding you of this throughout today's session, and your TAs will remind of you this throughout the course, but you heard it here first: Search quickly, search often, and search in plain English (or your preferred non-computer language)! Don't know what function you should use to do a t-test? Google "t test R", or "how do I do a t-test in R?". Don't remember how to use the chisq.test() function? Google "chisq.test() R". Don't remember what a chi-squared test is? Google it, and read the Wikipedia page, and the Stackexchange discussion, and whatever weird PDFs you find online. Still getting an error message when you try to run the code? Google that error message, in quotes.
+We'll keep reminding you of this throughout today's session, and your TAs will remind of you this throughout the course, but you heard it here first: Search quickly, search often, and search in plain English (or your preferred non-computer language)! 
+
+### Use the internet!
+Don't know what function you should use to do a t-test? Google "t test R", or "how do I do a t-test in R?". Don't remember how to use the chisq.test() function? Google "chisq.test() R". Don't remember what a chi-squared test is? Google it, and read the Wikipedia page, and the Stackexchange discussion, and whatever weird PDFs you find online. Still getting an error message when you try to run the code? Google that error message, in quotes.
 
 Every person using R, and every person doing statistics, has a million questions as they are doing it - novices and experts alike. Luckily for all of us, many of our fellow R and stats learners post their questions online, and other lovely people attempt to answer them publicly! We read somewhere that a prominent distinction between an experienced programmer and a novice is the longer latency for the novice to look up the help for something confusing (but the direction of causality is not clear!).
 
+### Use R!
 Another wonderful thing about working in R is that there's actually a lot of help built right into R, and RStudio makes it very easy to see. Almost all R functions (more later on what those are) have help files built in that will provide you with useful information about what those functions do and how to use them. You find this by typing '?function', where I am using "function" as a stand-in for the name you actually want to know about (e.g., '?chisq.test' or '?t.test'). It's important to read these files closely the first time you encounter a function, but it's also (possibly more) important to refer to them **frequently**. If you have a sense for what you want to do, but don't know or can't remember the exact function that will do it, you can use two question marks to search through the help files for a term (e.g. '??regression').
 
 Getting Help Practice
@@ -161,6 +168,7 @@ x = 25:90
 #ggplot(data=df_survey, aesthetic(x = age, y = recallq)) +
 #  geom_point()
 ```
+
 (We wanted a scatterplot of age against responses to the recall question)
 
 ```{r}
@@ -168,6 +176,7 @@ example = data.frame(label=c("ENS1","ENS2","ENS3","ENS4"),hsp44=c(0,2,1,0),mus=c
 ggplot(data=example, aes(x = mus, y = hsp44)) +
   geom_point(size=2)
 ```
+
 (We wanted to include the rows with mus=NA in our plot, but set mus=0 for those values)
 
 Here's a more general problem you will run into, simply, how to do something you've never done before! Search google and figure out how to plot a **polynomial** regression line (e.g. y = x^2) onto this ggplot code:
@@ -198,9 +207,11 @@ rs2_mult = lm(optmism ~ age + party, data = df_survey)
 summary(rs2_mult) # given the model we just fit with lm(), give us the summary
 ```
 
-Don't worry yet about understanding every line of this output: it's complicated and we will spend much of the course learning to interpret it. In the meantime, let's focus on two particularly interesting properties of these results. First, looking at the table with $t$ and $p$ values, we see that *age* is still highly significant as a predictor even after controlling for party membership. Second, looking at the "R-squared" statistic, we see that it's gone up to about 0.30. Just by including "party" as a predictor, we were able to go from explaining about 10% of the variance in optimism to explaining 30% of the variance! Intuitively, this appears to be a "better" model, a concept that we will quantify later in the course.
+*Don't worry yet about understanding every line of this output*: it's complicated and we will spend much of the course learning to interpret it!
 
-Returning to the simple linear regression (with a single predictor), we can ask ggplot to reconstruct it from the aesthetics object and plot it on top of the data:
+In the meantime, let's focus on two particularly interesting properties of these results. First, looking at the table with $t$ and $p$ values, we see that *age* is still highly significant as a predictor even after controlling for party membership. Second, looking at the "R-squared" statistic, we see that it's gone up to about 0.30. Just by including "party" as a predictor, we were able to go from explaining about 10% of the variance in optimism to explaining 30% of the variance! Intuitively, this appears to be a "better" model, a concept that we will quantify later in the course.
+
+Returning to the simple linear regression (with a single predictor), we can ask `{ggplot}` to reconstruct it from the aesthetics object and plot it on top of the data:
 
 ```{r plot_optmism_on_age_reg, fig.width=5, fig.height=4}
 ggplot(data=df_survey, aes(x=age,y=optmism)) +
@@ -209,13 +220,13 @@ ggplot(data=df_survey, aes(x=age,y=optmism)) +
   geom_smooth(method="lm",color="red",se=F)
 ```
 
-We can also visualize diagnostic plots of the residuals from the lm() output, which  can be helpful in showing if assumptions of normality, etc, are met, or to identify outliers:
+We can also visualize diagnostic plots of the residuals from the `lm()` output, which  can be helpful in showing if assumptions of normality, etc, are met, or to identify outliers:
 
 ```{r plot_optmism_on_age_lm, fig.width=5, fig.height=4}
 plot(rs2)
 ```
 
-Note that if you want to really understand what's happening in these plots, it can be valuable to plot these by hand, for example here is some code to plot the residuals in ggplot:
+Note that if you want to really understand what's happening in these plots, it can be valuable to plot these by hand, for example here is some code to plot the residuals in `{ggplot}`:
 
 ```{r}
 ggplot(data=df_survey, aes(x=age,y=rs2$residuals)) +
@@ -224,7 +235,6 @@ ggplot(data=df_survey, aes(x=age,y=rs2$residuals)) +
 ```
 
 # Reading data from online repositories
-
 
 R allows us to read data that's stored in a file on your computer or from a URL online. Here, we're going to look at data where each participant (*n* = 50) reports whether they took a flu shot (`Shot` = 1) or not (`Shot` = 0), their age (`Age`), and their health awareness level (`Health.Aware`).  Is Prob(`Shot` = 1) influenced by `Age`?  By `Health.Aware`?
 
@@ -244,12 +254,14 @@ Here, we have a numeric matrix of data, with 50 observations for 3 variables. To
 plot(flu.table,cex.labels=2, pch=23, bg='orange', cex=2)
 ```
 
-Another nice package for this is GGAlly:
+Another nice package for this is `{GGAlly}`:
 
 ```{r}
 #install.packages('GGally')
 library(GGally)
 ```
+
+Some example code using this function can be found on the [Plotting Examples page](http://stanford.edu/class/psych252/plots/index.html#continuous-and-categorical-data) of the class site.
 
 ```{r}
 # for visualization, we can improve by having Shot as a factor:
@@ -268,4 +280,4 @@ ggplot(data=flu.table, aes(x=Health.Aware, y=Shot)) +
 
 # 252 HW & Performing t-tests in R
 
-Much of Psych 252 takes place on your own time working through the homework problem sets. To help you get a head start on understanding what we expect to receive back for each problem set we're going to briefly build up a Pysch 252 style HW. Open the file module2-hw.Rmd at this time, the rest of module 2 will occur there!
+Much of Psych 252 takes place on your own time working through the homework problem sets. To help you get a head start on understanding what we expect to receive back for each problem set we're going to briefly build up a Pysch 252 style HW. Open the file `module2-hw.Rmd` at this time, the rest of module 2 will occur there!
