@@ -258,9 +258,9 @@ df$buz = exp(df$foo)
 df
 ```
 
-### DataFrames Continued
+### Example: Working with data frames
 
-The example dataset is stored in the file `earlydeaths.csv`, which we have hosted for you on the class website. In this dataset, each juvenile death in the County (*n* = 350) is labeled by the year it occurred (`time` = 1, 2 or 3; corresponding to 1990-91, 1992-93, 1994-95), and by the cause of death (`cause` = "maltreatment" or "other"). 
+To illustrate the basic process of importing and exploring a new data set, we turn to an example dataset stored in the file `earlydeaths.csv`, which we have hosted for you on the class website. In this dataset, each juvenile death in the County (*n* = 350) is labeled by the year it occurred (`time` = 1, 2 or 3; corresponding to 1990-91, 1992-93, 1994-95), and by the cause of death (`cause` = "maltreatment" or "other"). 
 
 For every dataset we encounter in this course, we will ask two broad questions: (1) "What relationships among variables would be interesting to study?" and (2) "What mechanism (causal or otherwise) might give rise to those relationships?" For this dataset, for example, we might be interested in the relationship between time and cause of death. One mechanism that might lead to an increasing relationship is an increase in maltreatment *cases* over time, many of which result in death. This would be a news-worthy result! On the other hand, maybe a larger overall population could be the mechanism: this would lead to an increase in maltreatment deaths over time (simply because more people are treated), but also an increase in other kinds of deaths. This would not be as news-worthy. Once these questions have been posed, we can select appropriate statistical tests to conduct. Otherwise, the results are not particularly meaningful. 
 
@@ -293,7 +293,7 @@ summary(death_table)
 
 This basic pattern (using a generic function to perform different kinds of processing depending on the type of object you're operating over) can be a bit confusing, but it is central to R's power and agility as a data analysis environment.
 
-Take a moment to continue exploring this data set. What else can you learn about it? Can you think of a way to distinguish between the different mechanisms posed above (hint: we might want to look at the *proportion* of different kinds of deaths as opposed to raw counts)? Are certain ways of formatting the data better for answering certain questions?
+Take a moment to continue exploring this dataset. What else can you learn about it? Can you think of a way to distinguish between the different mechanisms posed above (hint: we might want to look at the *proportion* of different kinds of deaths as opposed to raw counts)? Are certain ways of formatting the data better for answering certain questions?
 
 ### Basic Regression and Plotting
 
@@ -318,47 +318,57 @@ scale = read.csv('http://stanford.edu/class/psych252/_downloads/dataset_scale.cs
 head(scale)
 ```
 
-Scale is a dataset of fake data looking at the height and salary of individuals. Take a moment to explore this dataset using the functions `mean()`, `sd()`, and `median()`. What information can you glean from these summary statistics? Note that `summary()` will give you most of this information in a compact format.
+`scale` is a fake dataset containing information about twenty individuals. We are given two facts about each person: the number of years they've worked and the salary they earn. Take a moment to explore this dataset using the functions `mean()`, `sd()`, and `median()`. What information can you glean from these summary statistics? Note that `summary()` will give you most of this information in a compact format.
 
-One issue here is that it's difficult to see the shape of this distribution. Are heights actually spread into two bimodal groups for men and women? Or is it a continuous distribution? We can use `ggplot()` to help us figure this out.
+One issue here is that it's difficult to see the shape of this distribution. A number of different distributions can give rise to the same summary statistics. Are salaries clustered into two separate groups (called a "bimodal" distribution)? Are they spread uniformly across an interval? Or are they concentrated at a single value? While we can appeal to complex statistical tests to answer these questions, it is often quicker and more easily interpretable to simply look at a visualization of the data. We can use `ggplot()` to help us make useful plots.
 
-What ggplot does is create a plot "object", which we will store in `g`:
+ggplot creates a plot "object", which we will store in `g`:
 
 ```{r}
 g = ggplot(data=scale)
 ```
 
-Note that we told the ggplot object that it will use the dataset scale as its source of data.
+Note that we told the ggplot object that it will use the dataset `scale` as its source of data, so that when we refer to `salary` in a ggplot command, R will know that we mean `scale$salary`.
 
 Now let's add a "layer" of visualization, which ggplot calls a "geom":
 
 ```{r}
-g + geom_histogram(aes(x=height), binwidth=0.5)
+g + geom_histogram(aes(x=years), binwidth=1.9)
 ```
 
-That may look complicated but there are actually only two simple parts:
+That command may look complicated but there are actually only two simple parts:
 
-`aes(x=height)` is the mapping of variables to axis, aes stands for aesthetic.
-`geom_histogram(aes(), ...)` is the actual "layer", which creates the nice looking plot.
+`aes(x=years)` is the mapping of variables in the dataset to component of the plot (aes stands for aesthetic).
+`geom_histogram(aes(), ...)` is the actual "layer", which uses the mapping in `aes` to create a nice looking plot. What does this tell us about the distribution of years worked?
 
-Let's do a scatterplot of points with height on the x axis and salary on the y axis.
+One question we might ask about this (fake) dataset is about the relationship between salary and years worked. If experience is rewarded in our economy, we might expect a postive relationship: the more years someone has worked, the more they should make. Let's test this hypothesis by making a scatterplot of points with years worked on the x axis and salary on the y axis.
 
 ```{r}
-g + geom_point(aes(x=height, y=salary))
+g + geom_point(aes(x=years, y=salary))
 ```
 
-Did you notice from the summary statistics that there was a distinct outlier? Just to show off the power of ggplot(), let's add a regression line! This time I'll combine all of the `ggplot()` code into one group, without using the "g" object we made earlier. Notice how we are *literally* adding "layers" on top of each other.
+It looks like there might be a weak positive relationship, but notice that there is an "outlier" that might make this relationship appear to be stronger than it really is: one individual has worked 10 years and makes twice the salary of the next highest earned. Would you have noticed this outlier from the summary statistics alone? Making plots is often the only way to notice these small, but crucial, aspects of the data. 
+
+Just to show off the power of `ggplot()`, let's add a curve that shows the trend of the data! There are many options to use here, many of which we'll explore over the course of the quarter. Here, we'll use two. 
+
+1. **loess regression**, a non-parametric local smoothing technique that is often used to informally check whether a parametric model  (e.g. a linear or quadratic curve) might be appropriate. 
+
+2. **linear regression**, the best fitting straight line through the data points.
+
+This time we'll combine all of the `ggplot()` code into one group, without using the "g" object we made earlier. Notice how we are *literally* adding "layers" on top of each other.
 
 ```{r}
-g = ggplot(data=scale,aes(x=height,y=salary))
-
-g + geom_point() +
-  geom_smooth(method="lm",color='orange')
+(ggplot(aes(x=years,y=salary), data=scale)
+  + geom_point()
+  + geom_smooth(method="loess",color='blue')
+  + geom_smooth(method="lm",color='orange'))
 ```
 
-Also note that because both the scatterplot layer and the regression layer use the x/y mapping of height/salary, we moved that mapping into the main "g" object. This way it gets re-used by each of the layers. Now as a graph we get a lot of information, but we don't get the actual equation of this regression, we don't know the probability that this dataset would occur by chance, etc... All of that will come in Module 2.
+We notice a few things here. First, both regressions lines are sloping up, which tentatively supports our hypothesis about a positive relationship! Second, the loess curve (shown in blue) diverges quite a bit from the straight line, suggesting that a **linear** model may be incorrect: maybe it's exponential! Before we get carried away with this speculation, however, note that the extreme up-tick at the upper end of the 'years' scale seems to be driven primarily by the outlier we noticed above. 
 
-Before we finish, try writing some code on your own, see if you can create a plot showing the same linear regression, but without the outlier point!
+While a glance at this graph conveys a lot of information about the data and gives us helpful clues about what next steps we should take in our analysis, it cannot tell the whole story. We don't get an actual equation describing the strength of the relationship, we don't know the probability that this dataset would occur by chance, etc... All of that will come in Module 2.
+
+Before we finish, try writing some code on your own, see if you can create a plot showing the same regression, but without the outlier point!
 
 ```{r}
 # hint: you'll want to think back to what you learned earlier about indexing.
