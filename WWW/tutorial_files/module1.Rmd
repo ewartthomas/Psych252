@@ -260,9 +260,11 @@ df
 
 ### DataFrames Continued
 
-The example dataset is stored in the file `earlydeaths.csv`, which we have hosted for you on the class website. In this dataset, each juvenile death in the County (*n* = 350) is labeled by the year it occurred (`time` = 1, 2 or 3; corresponding to 1990-91, 1992-93, 1994-95), and by the cause of death (`cause` = â€˜maltreatmentâ€™ or â€˜otherâ€™).  **Is the cause of death changing over time?**
+The example dataset is stored in the file `earlydeaths.csv`, which we have hosted for you on the class website. In this dataset, each juvenile death in the County (*n* = 350) is labeled by the year it occurred (`time` = 1, 2 or 3; corresponding to 1990-91, 1992-93, 1994-95), and by the cause of death (`cause` = "maltreatment" or "other"). 
 
-Now, let's load in the data:
+For every dataset we encounter in this course, we will ask two broad questions: (1) "What relationships among variables would be interesting to study?" and (2) "What mechanism (causal or otherwise) might give rise to those relationships?" For this dataset, for example, we might be interested in the relationship between time and cause of death. One mechanism that might lead to an increasing relationship is an increase in maltreatment *cases* over time, many of which result in death. This would be a news-worthy result! On the other hand, maybe a larger overall population could be the mechanism: this would lead to an increase in maltreatment deaths over time (simply because more people are treated), but also an increase in other kinds of deaths. This would not be as news-worthy. Once these questions have been posed, we can select appropriate statistical tests to conduct. Otherwise, the results are not particularly meaningful. 
+
+Let's start by loading in the data:
 
 ```{r load_earlydaths}
 df_death = read.csv("http://stanford.edu/class/psych252/data/earlydeaths.csv")
@@ -283,7 +285,7 @@ death_table = table(df_death$time, df_death$cause)
 death_table
 ```
 
-Calling `summary()` on this object actually performs a $\chi^2$ test on this contingency table!
+Calling `summary()` on this object actually performs a $\chi^2$ test on this contingency table, which we will learn more about in future modules!
 
 ```{r summary_chi2}
 summary(death_table)
@@ -291,7 +293,7 @@ summary(death_table)
 
 This basic pattern (using a generic function to perform different kinds of processing depending on the type of object you're operating over) can be a bit confusing, but it is central to R's power and agility as a data analysis environment.
 
-Take a moment to continue exploring this data set, what else can you learn about it?
+Take a moment to continue exploring this data set. What else can you learn about it? Can you think of a way to distinguish between the different mechanisms posed above (hint: we might want to look at the *proportion* of different kinds of deaths as opposed to raw counts)? Are certain ways of formatting the data better for answering certain questions?
 
 ### Basic Regression and Plotting
 
