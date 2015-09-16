@@ -17,11 +17,11 @@ To examine how a 252 HW should be structured we have created this sub-module of 
 
 === The t.test ===
 
-For our example we will use a dataset with information about whether or not cities have right to work laws (RTWL), and their cost of living (COL). Here, we might be interested in whether the right to work law has an influence on cost of living. In this case, our null hypothesis ($H_0$) is that the mean COL is the same in cities with RTWL = 0 as in those with RTWL = 1.
+For our example we will use a dataset with information about whether or not cities have right to work laws (`RTWL`), and their cost of living (`COL`). Here, we might be interested in whether the right to work law has an influence on cost of living. In this case, our null hypothesis ($H_0$) is that the mean `COL` is the same in cities with `RTWL` = 0 as in those with `RTWL` = 1.
 
-In this case, it is important to note that the 2 populations of cities are *independent* of each other. That is, the cities with no RTWL are different from the cities that have a RTWL.
+In this case, it is important to note that the 2 populations of cities are *independent* of each other. That is, the cities with no `RTWL` are different from the cities that have a `RTWL`.
 
-To test our $H_0$, we'll compute a "standardized difference", or **t statistic**, between the *sample mean* COL of the cities with RTWL=0 and the *sample mean* COL of the cities with RTWL=1. Once we compute this t, we can decide if it's "large" (e.g., t < -2 or t > 2) to determine if we can reject our $H_0$. For now, you don't have to worry much about these details; we'll cover them in the first few classes!
+To test our $H_0$, we'll compute a "standardized difference", or **t statistic**, between the *sample mean* `COL` of the cities with `RTWL`=0 and the *sample mean* `COL` of the cities with `RTWL`=1. Once we compute this t, we can decide if it's "large" (e.g., t < -2 or t > 2) to determine if we can reject our $H_0$. For now, you don't have to worry much about these details; we'll cover them in the first few classes!
 
 ### Exploring the data
 
@@ -33,9 +33,9 @@ str(df_RTWL)
 head(df_RTWL)
 ```
 
-Now we'll plot the data to see the relationship between RTWL and COL:
+Now we'll plot the data to see the relationship between `RTWL` and `COL`:
 
-(First we load ggplot)
+(First we load `{ggplot}`; often, it's good practice to load in ALL the packages you'll use in the homework at the very beginning, and that way you won't forget and load in the same package twice!)
 ```{r}
 library(ggplot2)
 ```
@@ -84,14 +84,19 @@ Okay! Here's the hint: RTWL shows up as 0.50 on that plot, but you'll notice tha
 df_RTWL$RTWL
 ```
 
-What's happening is that the "aesthetic" object in ggplot() doesn't understand that this is really a factor when you try to plot it as a boxplot, note that geom_point doesn't have this problem:
+What's happening is that the "aesthetic" object in `{ggplot()`} doesn't understand that this variable should really be a factor when you try to plot it as a boxplot -- that's because `RTWL` is actually an integer! We can see that when we call `str()` on the dataframe:
+```{r}
+str(df_RTWL$RTWL)
+```
+
+Note that geom_point doesn't have this problem:
 
 ```{r}
 ggplot(data=df_RTWL,aes(x=RTWL,y=COL)) +
   geom_point()
 ```
 
-We can get around this by forcing ggplot() to see that we want to group the data by RTWL, or by changing RTWL to be a factor:
+We can get around this by forcing ggplot() to see that we want to group the data by `RTWL`, or by changing `RTWL` to be a factor:
 
 ```{r}
 ggplot(data=df_RTWL,aes(x=RTWL,y=COL,group=RTWL)) +
@@ -99,6 +104,8 @@ ggplot(data=df_RTWL,aes(x=RTWL,y=COL,group=RTWL)) +
 ggplot(data=df_RTWL,aes(x=factor(RTWL),y=COL)) +
   geom_boxplot()
 ```
+
+Make sure you **double check your dataframe** after you've loaded it in, and check to see the **structure of each of your columns**! Confusion between integers and factors can often be an issue, especially if your subjects are coded as numbers!!
 
 These are exactly the kind of 'minor bugs' you should expect to run into constantly as you work with R! The difference between an experienced programmer and a new programmer is mostly how quickly the turn to google for help! Okay, back to the t.test():
 
@@ -134,6 +141,8 @@ Now that we have our data in the correct format, we can run a t-test testing the
 res1 = t.test(COL0, COL1, var.equal = TRUE)
 res1
 ```
+
+#### Writing up results
 
 Now it's up to you: how would you write up the results of this statistical test? What information should you provide the reader about your test. Here's a rough outline of the kind of response we expect, fill in the missing parts according to what you did. Note that you should include effect sizes, confidence intervals, means, standard errors, p-values, etc, where that information is appropriate.
 
@@ -185,7 +194,7 @@ res2b = t.test(df_RTWLs$col0, df_RTWLs$col1,
 res2b
 ```
 
-Here, the difference is not quite significant! So it's important you tell R that the groups are paired when the two samples are dependent on one another! Now, before you finish this hw example, right up the results of these last two statistical tests and interpret your results in the larger context of right to work laws:
+Here, the difference is not quite significant! So it's important you tell R that the groups are paired when the two samples are dependent on one another! Now, before you finish this hw example, **write up the results of these last two statistical tests and interpret your results in the larger context of right to work laws**:
 
 
 
