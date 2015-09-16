@@ -134,7 +134,7 @@ We'll also add in a line to get a sense of the general trend of the data; here, 
 ggplot(data=df_survey,aes(x=age,y=optmism)) +
   ggtitle('Optimism vs. Age') +
   geom_point() +
-  geom_smooth(method="lm",color="red")
+  geom_smooth(method="loess",color="red")
 ```
 
 # If you learn nothing else today, learn this: Search!
@@ -188,14 +188,24 @@ rs2 = lm(optmism ~ age, data = df_survey) # this is the same as lm(df_survey$opt
 summary(rs2) # given the model we just fit with lm(), give us the summary
 ```
 
-Based off of this output, we can see that age is a significant predictor of optimism; the variance in age explains approximately 10% of the variance in optimism.
+Based off of this output, we can see that age is a significant predictor of optimism. Below the table of $t$ values and $p$ values, we can find the "Multiple R-squared" statistic of the model. This tells us that the variance in age explains approximately 10% of the variance in optimism.
 
-We can also investigate the regression line that was in rs2, we can ask ggplot to reconstruct it from the aesthetics object:
+More complex analyses may include *multiple* predictors, using a technique called *multiple regression*. One common reason to include addition predictors is to "control" for exogenous variables -- variables which are uninteresting in themselves yet related to the relationship we are analyzing. For example, if older people are more likely to belong to one party than another and people in that party tend to more optimistic (perhaps because of party rhetoric or policy stances), then the relationship we observed above may have nothing to do with age. The real relationship could be between party and optimism: it just happens that age and party membership is correlated. Multiple regression helps us tease apart these relationships: we want to know whether age is related to optimism *after accounting for party membership*. While the math of multiple regression is more complicated, R makes it as easy as adding additional terms to the formula in `lm`:
+
+```{r lm_multiRegression}
+df_survey$party = factor(df_survey$party) # treat party as a factor
+rs2_mult = lm(optmism ~ age + party, data = df_survey)
+summary(rs2_mult) # given the model we just fit with lm(), give us the summary
+```
+
+Don't worry yet about understanding every line of this output: it's complicated and we will spend much of the course learning to interpret it. In the meantime, let's focus on two particularly interesting properties of these results. First, looking at the table with $t$ and $p$ values, we see that *age* is still highly significant as a predictor even after controlling for party membership. Second, looking at the "R-squared" statistic, we see that it's gone up to about 0.30. Just by including "party" as a predictor, we were able to go from explaining about 10% of the variance in optimism to explaining 30% of the variance! Intuitively, this appears to be a "better" model, a concept that we will quantify later in the course.
+
+Returning to the simple linear regression (with a single predictor), we can ask ggplot to reconstruct it from the aesthetics object and plot it on top of the data:
 
 ```{r plot_optmism_on_age_reg, fig.width=5, fig.height=4}
 ggplot(data=df_survey, aes(x=age,y=optmism)) +
   geom_point() +
-  ggtitle('Optimism vs. Age')# +
+  ggtitle('Optimism vs. Age') +
   geom_smooth(method="lm",color="red",se=F)
 ```
 
