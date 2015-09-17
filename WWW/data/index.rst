@@ -35,13 +35,13 @@ Fields:
 dataset_scale.csv
 ---------------
 
-Mocked-up data for examining the relationship between height and salary.
+Mocked-up data for examining the relationship between salary and years of experience.
 
 :download:`Click to download data </datasets/dataset_scale.csv>`
 
 Fields:
 
-* **height**: Participant's height
+* **years**: Years that participant has worked
 * **salary**: Participant's salary
 
 
