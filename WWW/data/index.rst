@@ -45,6 +45,29 @@ Fields:
 * **salary**: Participant's salary
 
 
+P005.txt
+---------------
+
+This data set explores whether a right-to-work law (RTWL = 0 or 1) has an effect
+on the cost-of-living (COL) of an 'average' family, controlling for unionization rate,
+population, population density, property taxes, per capita income?
+Data is from 38 cities.
+(RTWL's, e.g., Taft-Hartley Amendments (1947),
+tended to reduce the power of unions over workers;
+did they make life easier or harder for workers?)
+
+:download:`Click to download data </datasets/P005.txt>`
+
+Fields:
+* **City**: Cities
+* **COL**: Cost-of-living of an "average" family
+* **PD**: Population density
+* **URate**: Unionization rate
+* **Pop**: Population
+* **Taxes**: Property taxes
+* **Income**: Per capita income
+* **RTWL**: Whether the city has a right-to-work law (0 = no, 1 = yes)
+
 hw2data.csv
 -----------
 
@@ -92,9 +115,9 @@ Fields:
 
 mentillness.csv
 ---------------
-Data from a study about how jurors’ perceptions of a defendant as ‘mentally ill’ might affect their perceptions 
-of defendant guilt. Participants are asked to read a carefully pretested case outline and then to answer questions 
-about the case. The case outline states the main facts of a robbery, including eye-witness testimony about the 
+Data from a study about how jurors’ perceptions of a defendant as ‘mentally ill’ might affect their perceptions
+of defendant guilt. Participants are asked to read a carefully pretested case outline and then to answer questions
+about the case. The case outline states the main facts of a robbery, including eye-witness testimony about the
 identity and behavior of the robber.
 
 
@@ -102,7 +125,7 @@ identity and behavior of the robber.
 
 Fields:
 
-* **guilt**: Self-reported belief that the defendant is guilty (1 = Definitely Not Guilty, 2 = Probably Not Guilty, 3 = Probably Guilty, or 4 = Definitely Guilty) 
+* **guilt**: Self-reported belief that the defendant is guilty (1 = Definitely Not Guilty, 2 = Probably Not Guilty, 3 = Probably Guilty, or 4 = Definitely Guilty)
 * **mentill**:  Self-reported belief that the defendant is mentally ill (1 = Yes or 0 = No)
 * **futhrt**:  Self-reported belief that the defendant is a future threat to society (scale from 0 [Very Low] to 10 [Very High])
 * **futthcat**:  Self-reported belief that the defendant is a future threat to society (binning together extreme responses [0-2; 3; 4; 5; 6-10])
@@ -138,7 +161,7 @@ Fields:
 lifesatis.csv
 ---------------
 
-Data with predictors of life satisfaction among 62 working married men between the age of 20 and 70. 
+Data with predictors of life satisfaction among 62 working married men between the age of 20 and 70.
 
 :download:`Click to download data </datasets/lifesatis.csv>`
 
@@ -167,9 +190,9 @@ Fields:
 
 * **method**: method of instruction, 1 = emphasizing 'drill and practice,' 2  =
 
-emphasizing fun with math, and 3 = control method 
+emphasizing fun with math, and 3 = control method
 
-* **satis**: student satisfaction with the method 
+* **satis**: student satisfaction with the method
 
 * **time**: time each student spent doing or talking about math during the school day (12 to 26)
 
