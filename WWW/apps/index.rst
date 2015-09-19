@@ -5,7 +5,7 @@ This is a collection of web apps built using `Shiny
 <http://www.rstudio.com/shiny/>`_ to illustrate and help build intuitions about
 some statistical concepts.
 
-Compiled by Steph Gagnon, Michael Waskom, and Lauren Howe
+Created/compiled by Steph Gagnon, Michael Waskom, and Lauren Howe
 
 
 Sampling and standard error
@@ -24,7 +24,7 @@ distribution of means (under normal assumptions).
 Simulating t tests
 ------------------
 
-`Link to app <http://spark.rstudio.com/supsych/ttest_simulation/>`_
+`Link to app <https://supsych.shinyapps.io/ttest_simulation>`_
 
 This example performs 1000 one-sample t tests (with different samples from the
 same distribution) and plots the resulting histograms of t statistics and p
@@ -45,7 +45,7 @@ observation to the prediction made by the model at the same value of x.
 Simple logistic regression
 --------------------------
 
-`Link to app <http://spark.rstudio.com/supsych/logistic_regression/>`_
+`Link to app <https://supsych.shinyapps.io/logistic_regression>`_
 
 Similar to the linear regression example, this app shows how the goal of
 logistic regression is to find a model (expressed in linear coefficients --
@@ -95,7 +95,7 @@ predictors and the response variable does not change.
 Simple mediation structure
 --------------------------
 
-`Link to app <http://spark.rstudio.com/supsych/mediation/>`_
+`Link to app <https://supsych.shinyapps.io/mediation`_
 
 This app is intended to provide some intuition about simple mediation models.
 It allows you to specify a range of causal structures by changing the strength
@@ -108,8 +108,8 @@ the regression parameters and inferential statistics.
 Signal Detection Theory
 --------------------------
 
-`Conceptual illustration <http://spark.rstudio.com/supsych/sdt_concept/>`_ /
-`Calculations from data <http://spark.rstudio.com/supsych/sdt_expt/>`_
+`Conceptual illustration <https://supsych.shinyapps.io/sdt_concept>`_ /
+`Calculations from data <https://supsych.shinyapps.io/sdt_expt>`_
 
 These applications illustrate the relationship between hit rate, false alarm rate,
 dprime, and criterion.
