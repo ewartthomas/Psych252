@@ -1,5 +1,5 @@
 ---
-title: "Homework: PS1"
+title: "Jane Doe, Homework 1"
 output:
   html_document:
     highlight: pygments
@@ -7,9 +7,7 @@ output:
     toc: yes
 ---
 
-Author: Jane Doe
-
-Load ggplot
+Load packages you'll be using throughout the HW
 
 ```{r}
 library(ggplot2)

@@ -27,7 +27,7 @@ Over the period from 1990-1995, was a **mean** of `r m_deaths` juvenile deaths p
 n = length(deaths)
 se_deaths = s_deaths/(sqrt(n))
 ```
-For a sample of `r n`, the **standard error** of $latex {\bar x}$ = `r se_deaths`.
+For a sample of `r n`, the **standard error** of $\bar x$ = `r se_deaths`.
 
 ### 1.b-iii)
 The algebraic equation for the estimated number (`T`) of maltreatment deaths in the period of `k` years is: 
@@ -37,7 +37,7 @@ T = `r m_deaths` * k
 As `k` increases, the total (T) increases linearly as a function of the mean number of deaths (i.e., `r m_deaths`).
 
 ### 1.b-iv)
-The standard deviation of the statistic (T) = `k *` sd(X). In this case, sd(X) is equal to the **standard error** of the sample mean ($latex {\bar x}$), calculated in **1b-ii**; thus sd(T) = `k *` `r se_deaths`. 
+The standard deviation of the statistic (T) = `k *` sd(X). In this case, sd(X) is equal to the **standard error** of the sample mean ($\bar x$), calculated in **1b-ii**; thus sd(T) = `k *` `r se_deaths`. 
 
 ### Example distributions using linear transformation:
 ```{r example_create_distributions}
@@ -112,10 +112,10 @@ df = rs1$parameter
 pval = rs1$p.value
 ```
 
-To test the null hypothesis that there is no relationship between the cause of juvenile deaths (`cause`) and time (`time`), we conducted a **chi-squared contingency test**. Results indicate that there is not a significant relationship between the cause of deaths and time, $latex {\chi^2}$(`r df`) = `r chisq`, *p* = `r pval`. In other words, the time trend in the number of deaths is similar regardless of the cause of death.
+To test the null hypothesis that there is no relationship between the cause of juvenile deaths (`cause`) and time (`time`), we conducted a **chi-squared contingency test**. Results indicate that there is not a significant relationship between the cause of deaths and time, $\chi^2$(`r df`) = `r chisq`, *p* = `r pval`. In other words, the time trend in the number of deaths is similar regardless of the cause of death.
 
 **n.b., you can write stats output in the following ways:**
-$latex {\chi^2}$(`r df`) = `r chisq`, *p* = `r pval`;
+$\chi^2$(`r df`) = `r chisq`, *p* = `r pval`;
 X^2 (2) = 0.43, *p* = 0.81.
 
 If you decide to use latex, [this site](http://www.calvin.edu/~rpruim/courses/m343/F12/RStudio/LatexExamples.html) is a helpful resource!
