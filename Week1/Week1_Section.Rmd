@@ -1,5 +1,11 @@
-Section, Week 1
-=======================================
+---
+title: "Section: Week 1"
+output:
+  html_document:
+    highlight: pygments
+    theme: flatly
+    toc: yes
+---
   
 Question 1
 -----------------------------------------
@@ -54,7 +60,11 @@ all_years <- rbind(year1, year2, year3)
 
 library(ggplot2)
 #now make your histogram
-ggplot(all_years, aes(length, fill = NumberYears)) + geom_histogram(alpha = 0.5, colour = "darkgray", aes(y = ..density..), position = 'identity')
+ggplot(all_years, aes(length, fill = NumberYears)) + 
+  geom_histogram(aes(y = ..density..),
+                 alpha = 0.5,
+                 colour = "darkgray",
+                 position = 'identity')
 ```
 
 Question 2
@@ -66,7 +76,7 @@ Here we will use the data in `earlydeaths.csv` to generate a **cross-tabulation*
 **Load in data:**
 ```{r 2a_earlydeaths_load}
 # load in data
-d0 = read.csv('earlydeaths.csv')
+d0 = read.csv('http://stanford.edu/class/psych252/_downloads/earlydeaths.csv')
 str(d0)
 summary(d0)
 ```
@@ -133,7 +143,7 @@ The proportions of likely voters for the age categories over 18 are: `r p_likely
 ### 8.b)
 **Load in data from fieldsimul1.csv:**
 ```{r 8b_load_fieldsimul1}
-d1 = read.csv('fieldsimul1.csv')
+d1 = read.csv('http://stanford.edu/class/psych252/_downloads/fieldsimul1.csv')
 str(d1)
 summary(d1)
 ```
@@ -163,9 +173,17 @@ Explain results....
 p_observed = table(d1$agecat0)/length(d1$agecat0)
 p_expected = p_likelyvoters
 
-df_cat =rbind(p_observed, p_expected)
-barplot(df_cat, col=c("darkblue","red"), xlab = ('Age Category'),
-ylab = 'Proportion', legend = rownames(df_cat), beside=TRUE)
+df_cat = data.frame(proportions=c(p_observed, p_expected),
+                    agecat=c(1,2,3,4,5,1,2,3,4,5),
+                    group=factor(c(-1,-1,-1,-1,-1,1,1,1,1,1),
+                                 labels=c("Observed","Expected")))
+
+ggplot(df_cat) +
+  geom_bar(aes(x=agecat, y=proportions, fill=group),
+           stat="identity",
+           position="dodge") +
+  scale_fill_brewer(palette="Set2") +
+  theme_bw()
 ```
 
 ### 8.d)
@@ -213,10 +231,25 @@ d1$recallq = 1*as.numeric(d1$recallq==1) + (-1)*as.numeric(d1$recallq==2) + 0*as
 summary(d1)
 ```
 
+
 ## 8.f)
+
+```{r}
+library(dplyr)
+```
+
 ```{r 8f_plot_recallq-vs-agecat0_byparty, fig.width=9, fig.height=7}
-interaction.plot(d1$agecat0, d1$party, d1$recallq,
-                 xlab = 'Age Category', ylab = 'Recall')
+d1 %>%
+  group_by(agecat0,party) %>%
+  summarise(mu = mean(recallq)) %>%
+  ggplot(data=., aes(x=agecat0, y=mu, color=factor(party), group=factor(party))) +
+  geom_line() +
+  xlab("Age Category") +
+  ylab("Recall")
+
+## If you prefer not to use dplyr, use this code:
+# interaction.plot(d1$agecat0, d1$party, d1$recallq,
+#                 xlab = 'Age Category', ylab = 'Recall')
 ```
 
 ## 8.g)
