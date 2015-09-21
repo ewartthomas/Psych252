@@ -32,10 +32,11 @@ Contents
 
    data/index.rst
    slides/index.rst
-   plots/index.rst
-   apps/index.rst
+   section/index.rst
    tutorials/index.rst
    cheatsheets/index.rst
-   section/index.rst
+   reporting/index.rst
+   plots/index.rst
+   apps/index.rst
    section_2013/index.rst
    
