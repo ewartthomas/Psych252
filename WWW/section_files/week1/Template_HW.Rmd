@@ -63,3 +63,29 @@ ggplot(df, aes(x=observations)) +
 # rs1 = hist(o1, prob=T, main='Sampling distribution of x0, 1000 Samples')
 # lines(density(o1, adjust=3))
 ```
+
+
+Question 10: (example stats writeup)
+-----------------------------------------
+
+Here we have some data (`x0`) about the demographics of participants in our experiment. We also have some data (`p0`) about the distribution of races in the United States. 
+
+We want to know whether the distribution of races in our data is consistent with the specified US distribution.
+  
+```{r 10_create_data}
+x0 = c(white=273, black=40, asian=10, other=5)
+p0 = c(white=.77, black=.13, asian=.054, other=0.046)
+
+# calculate proportions in sample
+x0/sum(x0)
+```
+
+#### Conduct a chi-squared test
+```{r}
+rs = chisq.test(x0, p=p0)
+rs
+
+rs$expected
+```
+
+Running a $X^2$ goodness-of-fit test, we see that we reject the null hypothesis that the distribution of races in our data is consistent with the US distribution, $X^2$ (df=`r rs$parameter`) =`r rs$statistic`, p = `r rs$p.value`. Thus, it appears that our data is not consistent with the US distribution. Specifically, we have more white participants than we would have expected (273 (~83%), relative to 253 if 77% of our participants were white), and we have fewer asian and other participants than would have been expected (approximately 10 fewer, off by about 3%). Perhaps we sampled from a college that had a larger proportion of white students relative to the US population, and as a result our sample was biased.
