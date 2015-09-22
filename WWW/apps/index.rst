@@ -7,6 +7,14 @@ some statistical concepts.
 
 Created/compiled by Steph Gagnon, Michael Waskom, and Lauren Howe
 
+Calculating significance with a chi-squared distribution
+---------------------------
+
+`Link to app <https://supsych.shinyapps.io/chisq_dist>`_
+
+This example demonstrates the relationship between degrees of freedom and the chi-squared distribution
+and also allows you to calculate significance for a chi-squared test, given degrees of freedom and a chi-squared statistic.
+
 
 Sampling and standard error
 ---------------------------
