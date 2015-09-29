@@ -1,0 +1,122 @@
+---
+title: "Linear transformations"
+output:
+  html_document:
+    highlight: pygments
+    theme: flatly
+    toc: yes
+---
+
+Linear transformations on  data
+----------------------------------
+
+When you have some data ($X$; note you can transform a single value, or a *set* of values) that you want to transform (e.g., converting yards to feet, grades based on 16 questions to grades based on a 100 pt scale), you can use linear transformations to convert your old data ($X_{old}$) into new transformed data ($X_{new}$) with the following formula:
+
+$$X_{new} = a + bX_{old}$$
+
+Here, $a$ and $b$ are constants (e.g., $a$ could equal 0, and $b$ could equal 1). Imagine we have some set of values, $X$, that is equal to $4, 8, 12$, with a mean ($\bar{x} \text{ or } mean(X) = 8$). Adding/subtracting a constant $a$ from the data will add/subtract $a$ from each value to obtain the transformed data (e.g., if we add $a = 2$, then our transformed data, $Y$, $= 6, 10, 14$); in order to calculate the mean of the transformed data, we can use the following equation:
+
+$$mean(Y) = a + b*mean(X)$$
+
+Where, in this case $b=1$ since we're just adding $a$ to $X$. Thus, we have $mean(Y) = 2 + 1*mean(X)$, and subsituting in the mean, we can solve it: $mean(Y) = 2 + 1*8 = 10$, which is indeed the mean of the set of numbers $6, 10, 14$! 
+
+Similarly we could scale the data by multiplying each value by a constant $b$. According to the equation above, we could calculate the mean of our new data $Y$ by multiplying our old mean ($\bar{x} \text{ or } mean(X) = 8$) by $b$, and then adding $a$ (which could be 0!). Let's walk through a quick example where our initial data is measurements in yards, and we want to convert those to feet by multiplying them by $b$ = 3 feet/yard. Again, using the equation above, we should be able to estimate the mean of our transformed data by multipying the mean of our old data by $b$:
+
+```{r}
+yards = c(4,8,12) # this is X!
+m_yards = mean(yards); m_yards
+
+m_yards * 3  # our estimate for mean of the new data Y (in feet)
+
+feet = yards * 3; feet # this is Y!
+m_feet = mean(feet); m_feet # same thing as above!
+```
+
+We can also estimate the variance and standard deviation of our new transformed data using similar formulas:
+
+$$var(Y) = b^2*var(X)$$
+$$s.d.(Y) = b*s.d.(X)$$
+
+Let's try this with our data converting yards to feet:
+```{r}
+var_yards = var(yards)
+sd_yards = sd(yards)
+
+var_feet = var(feet); var_feet
+var_yards*3^2 #using formula: var(Y) = b^2*var(X)
+
+sd_feet = sd(feet); sd_feet
+sd_yards * 3  #using formula: s.d.(Y) = b*s.d.(X)
+```
+
+
+### Look at this graphically
+
+If we had more samples (500!), we could see what this might look like graphically. Here, we have data in yards, with a mean of 8, and sd of 4. Transforming this data into feet (by multiplying by $k$ = 3), we can see that the mean is scaled from 8 to 24 (by a factor of 3), and the standard deviation is also scaled by a factor of 3 (note that the data in feet is much more spread out).
+```{r fig.width=10, fig.height=5, echo=FALSE}
+yards <- data.frame(value = rnorm(500, mean = 8, sd = 4))
+
+k = 3
+feet <- data.frame(value = (k * yards$value))
+
+# What's our new standard deviation on the transformed data?
+cat('New standard deviation: ', sd(feet$value))
+
+feet$unit <- 'feet'
+yards$unit <- 'yards'
+
+df <- rbind(feet, yards)
+
+library(ggplot2)
+#now make your histogram
+ggplot(df, aes(value, fill = unit)) + 
+  geom_histogram(aes(y = ..density..),
+                 alpha = 0.5,
+                 colour = "darkgray",
+                 position = 'identity') + 
+  theme_bw()
+```
+
+Linear transformations on statistics
+---------------------------------------
+
+As noted above, sometimes you might want to transform a single value, or in some cases, a **statistic**. Remember that a statistic is something that is *estimated* from a sample (e.g., the sample mean, $\bar{x}$) -- not from the true population -- and so, there's some degree of *uncertainty* about these estimates. 
+
+A mean taken from a **sample** ($\bar{x}$) is just an *estimation* of the population mean $\mu$ (since we don't know the true mean of the broader population); you can take different samples from the same population, and get different values of the sample mean $\bar{x}$, sample standard deviation ($s$) and sample variance ($s^2$). Importantly, if you take a few samples from the population, the distribution of *sampled means* can have *its own* mean, variance, and standard deviation. Here, the standard deviation of these sample means is referred to as the **standard error of the mean (SEM)** -- it can be considered as the standard deviation of the error in the sample mean with respect to the true population mean -- effectively using the sample mean to *estimate* the population mean. The SEM is estimated using this formula:
+
+$$SE_{\bar{x}} = \frac{s}{\sqrt{n}}$$
+
+where $s$ is the sample standard deviation, and $n$ is the sample size.
+
+Turning to the example from the homework (1.b), we have a **sample** of maltreatment deaths from 6 years (here, the population is all the years, and we're assuming that the frequency of maltreatment deaths is the same every year). To estimate the mean number of deaths in a given year, we find the mean ($\bar{x}$) of this sample:
+```{r}
+X = c(11, 15, 15, 16, 25, 20)
+xbar = mean(X); xbar
+```
+
+Now, we can calculate the **standard deviation of this sample**:
+```{r}
+sd_sample = sd(X)
+```
+
+We can also estimate the **standard deviation of the sample mean's estimation of the population mean**, i.e., the standard deviation of $\bar{x}$, using the SEM formula. Remember that while we have an estimate of the mean deaths due to maltreatment in a given year, this estimate is a little variable! The smaller the size of our sample, the worse our estimate will probably be; the larger the size of our sample, the better our estimate will probably be -- thus, we divide our estimated sample standard deviation by our sample size!
+```{r}
+se_xbar = sd_sample/sqrt(length(X)); se_xbar
+```
+
+Then, we might be interested in linearly transforming our statistic $\bar{x}$, for instance, to estimate the total number of deaths in $k$ years. Here, we can apply the same formulae from above, specifically: 
+
+$$mean(Y) = a + b*mean(X)$$
+$$var(Y) = b^2*var(X)$$
+$$s.d.(Y) = b*s.d.(X)$$
+
+Now, $X$ = $\bar{x}$, $a=0$, $b=k$, and $Y =$ total number of deaths in $k$ years = $T$. Here, the **standard deviation of our statistic** (e.g., $T$ or $\bar{x}$) can be obtained using our formula for the **standard error**. That's because there's some error in the sample mean's estimation of the population mean (the true number of deaths in a given year), and this standard deviation in the estimation of the sample mean is estimated with standard error! As a result, our standard deviation of $\bar{x}$ = the standard error of $\bar{x}$, and we just need to multiply that by $k$ to estimate the standard deviation of $T$:
+
+```{r}
+# for k=3 years
+k = 3
+sd_Y = k*se_xbar; sd_Y
+```
+
+So the standard deviation of $T$ is that of $\bar{x}$ scaled by $k$.
+

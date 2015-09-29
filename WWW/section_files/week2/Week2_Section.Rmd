@@ -1,0 +1,591 @@
+---
+title: "Section: Week 2"
+#runtime: shiny
+output:
+  html_document:
+    highlight: pygments
+    theme: flatly
+    toc: yes
+---
+
+## Distributions
+For more on exploring different **distributions** and their parameters check out [this app](https://gallery.shinyapps.io/dist_calc/).
+
+## Going through $\chi^2$
+
+Please refer to the [handout](http://www.stanford.edu/class/psych252/section/chisq-test.pdf). More details walking through the math behind a **goodness-of-fit** test and **contingency** test are available [here](http://stanford.edu/class/psych252/cheatsheets/index.html#math-behind-chi-square-tests).
+
+Basically, $\chi^2$ captures the **difference** between **observed** (O) data, and that **expected (E) by chance** (or from some other *a priori* hypothesis, e.g., census data).
+
+$$\chi^2 = \sum\limits_{i=1}^n \frac{(O_i - E_i)^2}{E_i}$$
+
+For contingency tests ($i$=row number, $j$=column number):
+$$E_{ij} = \frac{R_iC_i}{N}$$ 
+
+
+## Standard Deviation vs. Standard Error
+
+Check out our [app on "sampling and standard error"](http://stanford.edu/class/psych252/apps/index.html#sampling-and-standard-error)! Note that the variances of the sample statistic follow a $\chi^2$ distribution!
+
+### Standard Deviation
+
+Let's say that we want to calculate the mean temperature for Palo Alto. If we had access to all the temporature data ever, we could just calculate the **population mean** ($\mu$) temperature. However, we really only have access to a small sample of data. Specifically, on 6 days we observe the temperature, and thus we have a sample of 6 data points:
+```{r create_data}
+d <- c(80, 76, 81, 72, 68, 76)
+```
+
+This sample has some variation -- it's not exactly the same temperature each day (even if the range is fairly small!). The **sample standard deviation** ($s$) gives us a good estimation of the variation in the sample. Let's calculate the standard deviation of this sample:
+```{r calculate_sd}
+## calculating mean of our sample
+m <- mean(d); m
+## calculating number of observations
+n <- length(d); n
+
+## calculating standard deviation using variance
+sqrt(var(d))
+
+# or
+s <- sd(d); s
+```
+
+We can visualize the data too!
+```{r fig.width=5, fig.height=2.5}
+library(ggplot2)
+
+# change all ggplot backgrounds to white, increase font size
+theme_set(theme_bw(base_size = 18)) 
+
+temps = data.frame(temp=d)
+
+ggplot(data=temps, aes(x=temp)) + 
+  geom_histogram(fill='dodgerblue') + 
+  geom_vline(xintercept = m, linetype = "longdash") + 
+  geom_segment(aes(x = m-(s/2), y = 2.2, xend = m+(s/2), yend = 2.2), 
+               size=1.5, colour='darkgray')
+```
+
+Now we have a good idea of the mean and standard deviation of our *sample*, and we might want to know **how good our estimate of the population mean is**. Since our sample only has 6 observations, we might not have done a great job sampling from the whole population!
+
+### Standard error
+
+The **standard error** of the mean (sometimes referred to as the standard deviation of the sampling distribution of the sample mean) allows us to estimate the variability of our *estimation* of the population mean ($\mu$).
+
+```{r calculating standard error}
+se <- s/ n^.5
+print(se)
+
+# this also works:
+se = s/sqrt(n)
+print(se)
+```
+
+### Calculating confidence intervals
+
+Now we can use the standard error of the mean to calculate a **confidence interval** for the mean!
+
+Specifically, we want to estimate a **95% confidence interval** (CI). The **central limit theorem** says that the sampling distribution of a statistic (e.g., the sample mean; $\bar{x}$) will be approximately normal -- especially if our sample size is fairly large. In our case, the distribution of sample means is approximately normal with mean $\mu$, and standard deviation equal to the standard error of the mean. So, we want to **find the interval within which** $\bar{x}$ **falls 95% of the time**. 
+
+Conveniently, since the sampling distribution of $\bar{x}$ is approximately normal, we can use the standard normal distribution to figure out this interval. All the probabilities sum to 1, so that means we want to find the cutoffs where there's only $1 - 0.95$ out in the tails of our distribution. We'll call this $\alpha$, such that $\alpha = 1 - 0.95 = 0.05$. This will be split up between two tails, so we can divide $\alpha$ by 2 to find out how much of the distribution should be out in each tail.
+
+```{r fig.width=6, fig.height=3, echo=FALSE, warning=FALSE}
+# create data
+draws <- rnorm(5000000)
+dens <- density(draws)
+
+# figure out cutoffs
+alpha = 1-.95
+lowerbound = qnorm(alpha/2, lower.tail=TRUE)
+upperbound = qnorm(alpha/2, lower.tail=FALSE)
+
+
+# make df and plot
+dd <- with(dens,data.frame(z=x,density=y))
+
+qplot(z,density,data=dd,geom="line") +
+  geom_ribbon(data=subset(dd,z>lowerbound & z<upperbound),
+              aes(ymax=density),ymin=0,
+              fill="dodgerblue",colour=NA,alpha=0.5) +
+  geom_vline(x=c(lowerbound, upperbound), linetype='longdash') + xlim(-4, 4)
+```
+
+
+Check out [this Shiny App](https://gallery.shinyapps.io/dist_calc/) for more on distributions.
+
+To find the **critical z value**, such that $\frac{\alpha}{2}$ lies under the curve above it, we can use the quantile function `qnorm(probability, lower.tail=FALSE)`. Then, to calculate the confidence interval:
+
+$$\text{Lower bound}: \bar{x} - \text{critical } z*SEM$$
+$$\text{Upper bound}: \bar{x} + \text{critical } z*SEM$$
+
+
+```{r}
+# using R to get t scores, given p
+alpha = 0.05
+z_critical = qnorm(alpha/2, lower.tail=FALSE)
+
+ci95 <- se * z_critical
+
+## adding and subtracting it from mean
+lowerbound = m - ci95; round(lowerbound,2)
+upperbound = m + ci95; round(upperbound,2)
+```
+
+#### Small sample sizes: using the $t$ distribution
+However, when the sample size is pretty small (as in this case!), we should use the $t$ distribution instead of $z$. So let's do that:
+```{r confidence intervals}
+# using R to get t scores, given p
+alpha = 0.05
+t_critical = qt(alpha/2, df = n-1, lower.tail=FALSE); t_critical
+
+ci95 <- se * t_critical
+
+## adding and subtracting it from mean
+lowerbound = m - ci95; round(lowerbound,2)
+upperbound = m + ci95; round(upperbound,2)
+```
+
+So the confidence interval for the sample mean is from `r round(lowerbound,2)` to `r round(upperbound,2)`, which means that we are 95% confidence that the mean temperature in Palo Alto falls within this interval.
+
+
+
+## Centering vs. Standardizing Data
+
+So let's say we have a variable "i" and want to either center or standardize it.
+
+```{r setting x}
+## we have a data set with 4 variables
+dn <- c(3,4,15,8)
+
+## find mean and standard deviation for calculations
+mn <- mean(dn)
+print(mn)
+sdn <- sd(dn)
+print(sdn)
+```
+
+### Centering: subtracting mean from values
+
+```{r fig.width=5, fig.height=3}
+centered <- dn - mn; centered
+plot(centered)
+```
+
+
+Note, there's a helpful function that R has called `scale` -- we can use this to automatically center our data, like this:
+```{r fig.width=5, fig.height=3}
+centered_data = scale(dn, scale = FALSE); centered_data
+
+plot(centered_data)
+```
+n.b., if you just want to center the data, set **scale = FALSE**!
+
+
+Now what is our mean and standard deviation?
+```{r}
+mean(centered)
+sd(centered)
+```
+
+### Standardization: subtracting mean, dividing by standard deviation
+
+```{r fig.width=5, fig.height=3}
+standard <- (dn-mn)/sdn; standard
+
+plot(standard)
+```
+
+Now let's take a look at our mean and sd...
+
+```{r}
+mean(standard)
+sd(standard)
+```
+
+You can do this with the scale function too!
+```{r fig.width=5, fig.height=3}
+standardized_data = scale(dn, scale=TRUE)
+plot(standardized_data)
+```
+
+Let's visualize these with ggplot!
+```{r fig.width=6, fig.height=5}
+# made df from vectors
+d = data.frame(index=1:length(dn), original=dn, centered, standard)
+str(d)
+
+# reshape data
+library(tidyr)
+data_long <- gather(d, data.type, value, original:standard)
+str(data_long)
+
+# plot
+ggplot(data=data_long, aes(x=index, y=value, color=data.type)) + 
+  geom_line() + geom_point(size=3) + 
+   geom_hline(x=0, color='darkgray', linetype='longdash')
+```
+
+
+#### Centering/standardizing dataframes
+
+```{r data entry}
+# setwd
+d2 = read.csv('http://www.stanford.edu/class/psych252/data/dataset_scale.csv')
+```
+
+We're looking at a dataset of years and salary.  Let's check it out...
+
+```{r useful functions for looking at data}
+summary(d2)
+head(d2)
+tail(d2)
+str(d2$years)
+```
+
+We're working with years here, so it doesn't make sense to talk about expected salary when years is set to 0 - the mean is more interpretable.  So we center!
+
+Plot the data!
+```{r fig.width=5, fig.height=5}
+ggplot(data=d2, aes(x=years, y=salary)) + geom_point()
+```
+
+##### Center the data!
+
+```{r fig.width=5, fig.height=5}
+d2$yearsc = with(d2,scale(years, center = TRUE, scale = FALSE))
+head(d2$yearsc)
+
+ggplot(data=d2, aes(x=yearsc, y=salary)) + geom_point() + 
+  geom_vline(x=0, color='red', linetype='longdash')
+```
+
+##### Create standardized scores!
+
+```{r fig.width=5, fig.height=5}
+d2$yearss = with(d2, scale(years, center = TRUE, scale = TRUE))
+head(d2$yearss)
+
+ggplot(data=d2, aes(x=yearss, y=salary)) + geom_point() + 
+  geom_vline(x=0, color='red', linetype='longdash')
+```
+
+
+Now let's reexamine our data set...
+```{r}
+summary(d2)
+sd(d2$yearsc)
+sd(d2$yearss)
+```
+
+Note that the **means** = 0, but the standard deviations are different!
+
+
+##### Effects on `lm()`
+
+Does this affect our output from `lm()`?
+```{r tests with normalized variables}
+# non normalized
+rs1 = lm(d2$salary~d2$years)
+summary(rs1)
+
+# centered
+rs2 = lm(d2$salary~d2$yearsc)
+summary(rs2)
+
+# standardized
+rs3 = lm(d2$salary~d2$yearss)
+summary(rs3)
+```
+
+Note the **change in estimates** for the last part, but that **significance** never changes.
+Note also the **intercepts**.
+
+```{r fig.width=10, fig.height=4, echo=FALSE, warning=FALSE}
+d2_long = gather(d2, transformation, years, -salary)
+
+ggplot(data=d2_long, aes(x=years, y=salary, color=transformation)) + 
+  geom_point() + geom_smooth(method='lm') +
+  facet_grid(.~transformation)
+```
+
+### Differences between normalizing data and normal distributions
+
+Standardizing data doesn't fix problems of skewness.  Let's take a look at a skewed distribution
+
+```{r}
+x0 = c(1:3, 5, 7, 7, 7, 8, 8, 8, 8, 9, 9, 9)
+hist(x0)
+
+msk = mean(x0); msk
+
+sdsk = sd(x0); sdsk
+
+## load psych library, test for skewness
+# install.packages('psych')
+library(psych)
+skew(x0)
+```
+
+
+Now let's standardize...
+```{r standardizing skewed distributions}
+
+skewst = (x0-msk)/sdsk
+
+hist(skewst)
+
+## now we can see that the mean and SD are at 0 and 1
+mean(skewst)
+sd(skewst)
+
+## BUT the plot looks exactly the same -- the data is still skewed!
+skew(skewst)
+```
+
+
+## $t$-tests and the null hypothesis
+
+Let's generate a distribution that represents the null.
+
+```{r t test simulation null}
+## generating random data
+group = rnorm(10000, mean=0, sd=1)
+```
+
+Let's plot this distribution.
+
+```{r plot null, fig.width=6, fig.height=3}
+ggplot(data=data.frame(group), aes(x=group))+ 
+  geom_histogram(fill='dodgerblue', color='black') + 
+  geom_vline(x=0, linetype='longdash', color='red')
+```
+
+Let's do a t.test -- is this different from 0?
+```{r t test}
+t.test(group)
+```
+
+Taking samples from the population distribution
+```{r one sample}
+samp1 = sample(group, size=10, replace=F)
+samp1
+t.test(samp1)
+```
+
+If we took 1000 samples from this distribution:
+```{r sampling null}
+scores = group
+R = 1000                                   
+t.values = numeric(R)  
+
+for (i in 1:R) {
+groups = sample(scores, size=100, replace=T)
+t.values[i] = t.test(groups)$statistic
+}
+```
+
+Plotting t values!
+
+```{r plot t-values, fig.width=5, fig.height=3}
+critical_t = qt(p = 0.05/2, df = 99, lower.tail = FALSE); critical_t
+
+ggplot(data=data.frame(t.values), aes(t.values)) + geom_histogram() +
+  geom_vline(x=c(critical_t, -critical_t), color='red')
+```
+
+Some t-values that fall outside of the range!
+
+#### Let's visualize what a one-sample t-test is doing!
+
+$$t = \frac{\bar{x}-\mu}{\frac{s}{\sqrt{n}}}$$
+
+```{r}
+m = 2
+s = 2
+n = 20
+alpha = 0.05
+critical_tstat = qt(alpha/2, df=n-1, lower.tail=FALSE); print(critical_tstat)
+
+sterr = s/sqrt(n); sterr
+
+t_statistic = m/sterr; t_statistic
+pval = pt(q = t_statistic, df = n-1, lower.tail = FALSE); pval
+
+upper = m + critical_tstat*sterr; upper
+lower = m - critical_tstat*sterr; lower
+```
+
+```{r echo=FALSE, fig.width=6, fig.height=3}
+# generate density info
+sequence = seq(-4,t_statistic+1,.005)
+data = data.frame(density = dt(x = sequence, df=n-1), t=sequence)
+# plot
+ggplot(data=data, aes(x=t, y=density)) + geom_point(size=.4) + 
+  geom_vline(x=c(critical_tstat, -critical_tstat), color='red') +
+  geom_ribbon(data=subset(data,t>critical_tstat),
+              aes(ymax=density),ymin=0,
+              fill="red",colour=NA,alpha=0.5) +
+  geom_ribbon(data=subset(data,t<critical_tstat*-1),
+              aes(ymax=density),ymin=0,
+              fill="red",colour=NA,alpha=0.5) +
+  geom_vline(x=t_statistic, color='blue', linetype='longdash')
+  
+```
+
+
+## Power
+
+Power is the **ability of a test to detect an effect**, given that the effect exists (i.e., that the alternate hypothesis is true). In other words: 
+
+$$\text{Power} = P(\text{reject }H_0| H_a \text { is true}) = 1- \beta$$
+
+We can estimate the **distributions** of the null ($H_0$) and the alternate ($H_a$) hypotheses, and figure out the probability of "accepting" the alternate hypothesis, given that it's true. That is, we want to find the **area under the curve** of the **alternate hypothesis** to the *right* of the critical cutoff for the null hypothesis (our $\alpha$ region; more specifically $\frac{\alpha}{2}$ if it's a 2-tailed test!). Often power is described in terms of Type II error. **Type I error** is "false positives" -- the probability of rejecting the null, given that it's true; this is also our $\alpha$ region$. On the other hand, **Type II error** is "false negatives" -- the probability of retaining the null, given that the alternate hypothesis is actually true. This region is the area under the $H_a$ distribution to the left of the cutoff; basically where we'd retain the null. Since the area under the density curve sums to 1, we know that the area under the $H_A$ curve where we'd *correctly* reject the null is $1-\beta$, and **that's our power**!
+
+```{r echo=FALSE, fig.width=8, fig.height=4}
+# Code thanks to: http://rpsychologist.com/creating-a-typical-textbook-illustration-of-statistical-power-using-either-ggplot-or-base-graphics
+
+library(grid) # need for arrow()
+m1 <- 0  # mu H0
+sd1 <- 1.5 # sigma H0
+m2 <- 3.5 # mu HA
+sd2 <- 1.5 # sigma HA
+
+z_crit <- qnorm(1-(0.05/2), m1, sd1)
+
+# set length of tails
+min1 <- m1-sd1*4
+max1 <- m1+sd1*4
+min2 <- m2-sd2*4
+max2 <- m2+sd2*4          
+# create x sequence
+x <- seq(min(min1,min2), max(max1, max2), .01)
+# generate normal dist #1
+y1 <- dnorm(x, m1, sd1)
+# put in data frame
+df1 <- data.frame("x" = x, "y" = y1)
+# generate normal dist #2
+y2 <- dnorm(x, m2, sd2)
+# put in data frame
+df2 <- data.frame("x" = x, "y" = y2)
+
+# Alpha polygon
+y.poly <- pmin(y1,y2)
+poly1 <- data.frame(x=x, y=y.poly)
+poly1 <- poly1[poly1$x >= z_crit, ] 
+poly1<-rbind(poly1, c(z_crit, 0))  # add lower-left corner
+
+# Beta polygon
+poly2 <- df2
+poly2 <- poly2[poly2$x <= z_crit,] 
+poly2<-rbind(poly2, c(z_crit, 0))  # add lower-left corner
+
+# power polygon; 1-beta
+poly3 <- df2
+poly3 <- poly3[poly3$x >= z_crit,] 
+poly3 <-rbind(poly3, c(z_crit, 0))  # add lower-left corner
+
+# combine polygons. 
+poly1$id <- 3 # alpha, give it the highest number to make it the top layer
+poly2$id <- 2 # beta
+poly3$id <- 1 # power; 1 - beta
+poly <- rbind(poly1, poly2, poly3)
+poly$id <- factor(poly$id,  labels=c("power","beta","alpha"))
+
+# plot with ggplot2
+ggplot(poly, aes(x,y, fill=id, group=id)) +
+  geom_polygon(show_guide=F, alpha=I(8/10)) +
+  # add line for treatment group
+  geom_line(data=df1, aes(x,y, color="H0", group=NULL, fill=NULL), size=1.5, show_guide=F) + 
+  # add line for treatment group. These lines could be combined into one dataframe.
+  geom_line(data=df2, aes(color="HA", group=NULL, fill=NULL),size=1.5, show_guide=F) +
+  # add vlines for z_crit
+  geom_vline(xintercept = z_crit, size=1, linetype="dashed") +
+  # change colors 
+  scale_color_manual("Group", 
+                     values= c("HA" = "#981e0b","H0" = "black")) +
+  scale_fill_manual("test", values= c("alpha" = "#0d6374","beta" = "#be805e","power"="#7cecee")) +
+  # beta arrow
+  annotate("segment", x=0.1, y=0.045, xend=1.3, yend=0.01, arrow = arrow(length = unit(0.3, "cm")), size=1) +
+  annotate("text", label="beta", x=0, y=0.05, parse=T, size=8) +
+  # alpha arrow
+  annotate("segment", x=4, y=0.043, xend=3.4, yend=0.01, arrow = arrow(length = unit(0.3, "cm")), size=1) +
+  annotate("text", label="frac(alpha,2)", x=4.2, y=0.05, parse=T, size=8) +
+  # power arrow
+  annotate("segment", x=6, y=0.2, xend=4.5, yend=0.15, arrow = arrow(length = unit(0.3, "cm")), size=1) +
+  annotate("text", label="1-beta", x=6.1, y=0.21, parse=T, size=8) +
+  # H_0 title
+  annotate("text", label="H[0]", x=m1, y=0.28, parse=T, size=8) +
+  # H_a title
+  annotate("text", label="H[a]", x=m2, y=0.28, parse=T, size=8) +
+  # remove some elements
+  theme(panel.grid.minor = element_blank(),
+             panel.grid.major = element_blank(),
+             panel.background = element_blank(),
+             panel.border = element_blank(),
+             axis.line = element_blank(),
+             axis.text.x = element_blank(),
+             axis.text.y = element_blank(),
+             axis.ticks = element_blank(),
+             axis.title.x = element_blank(),
+             axis.title.y = element_blank(),
+             plot.title = element_text(size=22))
+```
+
+### Conceptual walkthrough of power
+
+First, let's determine a null distribution and its 95% CI:
+```{r calculating power null}
+alpha = 0.05
+
+null_mean <- 5
+sample_s <- 2
+sample_n <- 20
+
+sterr = sample_s/sqrt(sample_n)
+
+critical_t = qt(alpha/2, df=sample_n-1, lower.tail=FALSE); print(critical_t)
+
+# 95% CI around null mean
+m_error = critical_t*sterr; print(m_error)
+
+null_lower = null_mean - m_error; null_lower
+null_upper = null_mean + m_error; null_upper
+```
+
+So, we basically want to find the area that's under our $H_a$ curve, to the right of the critical region defined from the null distribution (though also there might be some *slight* chance of rejecting the null on the left side).
+
+$$P(\bar{x} > cutoff | H_a \text{ is true})$$
+
+We can get this by converting the lower/upper bounds on the null distribution into $t$-scores (i.e., standardizing the cutoffs) relative to the alternate hypothesis mean, and then we can use the $t$ distribution to figure out the area under the alternate hypothesis curve that's *not* within the null 95% CI (this will mostly be the region > the upper bound!
+
+```{r mean CI}
+delta = 1.5 # difference between null and alternate hypothesis
+alt_mean = null_mean + delta; print(alt_mean)
+
+# if alternative hypothesis true, calculate tscores for null lower/upper bounds
+tscore_lower = (null_lower-alt_mean) / sterr
+tscore_upper = (null_upper-alt_mean) / sterr
+
+# this gives us the area under Ha that's within the 95% CI of H0
+beta = pt(tscore_upper, df = n-1) - pt(tscore_lower, df = n-1)
+
+print(beta)
+
+# Just subtract this from 1 to get the power -- when we would reject H0
+power = 1-beta; power
+```
+
+### Using an R function for power calculations:
+
+Doing this same calculation in one line:
+
+```{r power.t.test}
+power.t.test(n=n,delta=1.5,sd=s,sig.level=0.05, 
+             type="one.sample",alternative="two.sided")
+```
+
+What else can this function do?
+
+```{r power.t.test examples}
+power.t.test(delta=1.5,sd=s,sig.level=0.05,power=.8, type="one.sample",alternative="two.sided") #80% power
+
+power.t.test(delta=1.5,sd=s,sig.level=0.05,power=.9, type="one.sample",alternative="two.sided") #90% power
+```
