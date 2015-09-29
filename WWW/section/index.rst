@@ -47,6 +47,27 @@ calculating some basic statistics from a vector, loading in dataframes, performi
 Week 2
 ################
 
+Section file
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Recap on chi-square tests, standard deviation vs. standard error, calculating confidence
+intervals, centering vs. standardizing quantitative variables. At the end, we'll touch on t-tests, and
+how to calculate power.
+
+[`Rmd <http://www.stanford.edu/class/psych252/section/Week2_Section.Rmd>`_]
+[`html <http://www.stanford.edu/class/psych252/section/Week2_Section.html>`_]
+
+
+Calculating chi-square handout
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+[`pdf <http://www.stanford.edu/class/psych252/section/chisq-test.pdf>`_]
+
+
+----------------------------
+
+
+Week 3
+################
 
 ----------------------------

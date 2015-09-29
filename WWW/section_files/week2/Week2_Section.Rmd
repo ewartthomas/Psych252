@@ -13,7 +13,7 @@ For more on exploring different **distributions** and their parameters check out
 
 ## Going through $\chi^2$
 
-Please refer to the [handout](http://www.stanford.edu/class/psych252/section/chisq-test.pdf). More details walking through the math behind a **goodness-of-fit** test and **contingency** test are available [here](http://stanford.edu/class/psych252/cheatsheets/index.html#math-behind-chi-square-tests).
+Please refer to the [handout](http://www.stanford.edu/class/psych252/section/chisq-test.pdf). More details walking through the math behind a **goodness-of-fit** test and **contingency** test are available [here](http://stanford.edu/class/psych252/cheatsheets/index.html#math-behind-chi-square-tests). Also, check out [this app](https://supsych.shinyapps.io/chisq_dist) to see how p-values are calculated from the $\chi^2$ distribution with a given number of dfs!
 
 Basically, $\chi^2$ captures the **difference** between **observed** (O) data, and that **expected (E) by chance** (or from some other *a priori* hypothesis, e.g., census data).
 
