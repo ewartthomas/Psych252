@@ -1,0 +1,27 @@
+---
+title: "Relationship between $df$s and variance of $t$ distribution"
+output:
+  html_document:
+    highlight: pygments
+    theme: flatly
+---
+
+$$\text{variance of } z \text{ distribution } = 1$$
+$$\text{variance of } t \text{ distribution }= \frac{df}{df-2}$$
+
+```{r echo=FALSE}
+library(ggplot2)
+theme_set(theme_bw(base_size = 18)) 
+
+sequence = 2:40
+variance_t = sequence/(sequence-2)
+
+data = data.frame(df=sequence, var_t=variance_t)
+
+ggplot(data=data, aes(x=df, y=var_t)) +
+  geom_point(size=2) +
+  geom_line()+
+  geom_hline(y=1, color='red', linetype='longdash')
+```
+
+### As the degrees of freedom increase, the variance of $t$ becomes more like that of $z$ (i.e., equal to 1). Thus, the distribution of $t$ becomes closer to that of $z$ as the sample size increases!

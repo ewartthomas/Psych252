@@ -63,6 +63,10 @@ Calculating chi-square handout
 
 [`pdf <http://www.stanford.edu/class/psych252/section/chisq-test.pdf>`_]
 
+Visualizing the relationship between df and t distribution variance
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+[`html <http://www.stanford.edu/class/psych252/section/variance_t_z.html>`_]
 
 ----------------------------
 
