@@ -517,8 +517,10 @@ ggplot(data=data, aes(x=t, y=density)) + geom_point(size=.4) +
 
 #### Visualizing the sample, 95% confidence interval, and $t$ statistic
 
-Let's look at an example here, where our null hypothesis is that age on a playground is 4 years old, and our alternate hypothesis is that it is 6 years old.
-```{r echo=FALSE, fig.width=5, fig.height=7}
+Let's look at an example here, where our null hypothesis is that age on a playground is 4 years old, and our alternate hypothesis is that it is 6 years old. 
+```{r echo=FALSE, fig.width=5, fig.height=9, warning=FALSE, message=FALSE}
+# generate some distributions of "population" data
+######################
 num_samples = 10000
 null_dist = rnorm(num_samples, mean = 4, sd=2)
 alt_dist = rnorm(num_samples, mean=6, sd=2)
@@ -526,7 +528,9 @@ alt_dist = rnorm(num_samples, mean=6, sd=2)
 data = data.frame(null=null_dist, alt=alt_dist)
 data = gather(data, dist, age)
 
-library(gridExtra) # plot multiple ggplots
+library(gridExtra) # plot multiple ggplots at once!
+theme_set(theme_bw(base_size = 12)) 
+
 p1 = ggplot(data=data, aes(x=age, fill=dist)) + 
   geom_histogram(alpha=.6, 
                  position="identity") +
@@ -536,6 +540,8 @@ p1 = ggplot(data=data, aes(x=age, fill=dist)) +
                    y = 870, xend = 6+(2/2), yend = 870), 
                size=2, colour='gray')
 
+# sample data
+######################
 sample_size = 20
 sample_alt = sample(alt_dist, size=sample_size, replace = FALSE)
 sample_sem = sd(sample_alt)/sqrt(sample_size)
@@ -561,18 +567,45 @@ p2 = ggplot(data=data_sample, aes(x=age)) +
                size=1.5, colour='red') +
   geom_vline(x=c(ci_up, ci_down), color='darkblue', linetype='longdash')
 
+# hypothetitical distribution of sample means
+######################
+sample_means = c() #initialize empty vector
+for (i in 1:num_samples){
+  sample_i = sample(alt_dist, size=sample_size, replace = FALSE)
+  sample_means[i] = mean(sample_i)
+}
+
+means_data = data.frame(age = sample_means)
+
+mean_ofmeans = mean(sample_means)
+sd_means = sd(sample_means)
+
+p3 = ggplot(data=means_data, aes(x=age)) + 
+  geom_histogram(alpha=.6, fill='lightblue',
+                 position="identity") +
+  ggtitle('Hypothetical distribution of sample means') + xlim(-3, 10) +
+  geom_vline(x=mean_ofmeans, color='blue') +
+  geom_segment(aes(x = mean_ofmeans-(sd_means/2), 
+                   y = 4000, xend = mean_ofmeans+(sd_means/2), yend = 4000), 
+               size=2, colour='gray')
+  
+
+# t distribution & statistic
+######################
+
 t_statistic = (sample_m - 4)/sample_sem
 t_dist = rt(n = num_samples, df = sample_size-1)
 
 data_tdist = data.frame(t=t_dist)
-p3 = ggplot(data=data_tdist, aes(x=t)) +
+p4 = ggplot(data=data_tdist, aes(x=t)) +
   geom_histogram(alpha=0.6, fill='green', position='identity') +
   ggtitle('t distribution (df=19)') + xlim(-3, 10) +
   geom_vline(x=t_statistic, color='darkgreen') +
   geom_vline(x=c(t_criterion, t_criterion*-1), color='darkgreen', 
              linetype='longdash')
 
-grid.arrange(p1, p2, p3, ncol=1)
+grid.arrange(p1, p2, p3, p4, ncol=1)
+theme_set(theme_bw(base_size = 18))  # set back
 ```
 
 ## Power
