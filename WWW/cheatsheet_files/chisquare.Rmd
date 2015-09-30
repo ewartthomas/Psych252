@@ -134,7 +134,7 @@ If you have **two categorical variables**, and you'd like to determine whether t
 **Alternate hypothesis** ($H_a$): The 2 categorical variables are dependent (there is a relationship between the variables)
 
 To calculate the **expected value** for a cell:
-$$E_{ij} = \frac{R_iC_i}{N}$$ 
+$$E_{ij} = \frac{R_iC_j}{N}$$ 
 where $R$ = row, $C$= column, $N$ = total, for $i$th row and $j$th column
 
 **$\chi^2$ Equation**:
