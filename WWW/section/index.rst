@@ -74,4 +74,12 @@ Visualizing the relationship between df and t distribution variance
 Week 3
 ################
 
+Section file
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Statistical test flowchart. Linear regression and logistic regression bootcamp.
+
+[`Rmd <http://www.stanford.edu/class/psych252/section/Week3_Section.Rmd>`_]
+[`html <http://www.stanford.edu/class/psych252/section/Week3_Section.html>`_]
+
 ----------------------------
