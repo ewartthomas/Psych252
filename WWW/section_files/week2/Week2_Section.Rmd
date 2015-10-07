@@ -734,12 +734,12 @@ $$P(\bar{x} > cutoff | H_a \text{ is true})$$
 We can get this by converting the lower/upper bounds on the null distribution into $t$-scores (i.e., standardizing the cutoffs) relative to the alternate hypothesis mean, and then we can use the $t$ distribution to figure out the area under the alternate hypothesis curve that's *not* within the null 95% CI (this will mostly be the region > the upper bound!
 
 ```{r mean CI}
-delta = 1.5 # difference between null and alternate hypothesis
+delta = 1.5 # difference between null and alternate hypothesis means
 alt_mean = null_mean + delta; print(alt_mean)
 
 # if alternative hypothesis true, calculate tscores for null lower/upper bounds
 tscore_lower = (null_lower-alt_mean) / sterr
-tscore_upper = (null_upper-alt_mean) / sterr
+tscore_upper = (null_upper-alt_mean) / sterr 
 
 # this gives us the area under Ha that's within the 95% CI of H0
 beta = pt(tscore_upper, df = n-1) - pt(tscore_lower, df = n-1)

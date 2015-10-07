@@ -51,13 +51,135 @@ The best general practice is to *visualize your data* using `ggplot` before star
 
 Another clue about the appropriateness of the linearity assumption comes from the the distribution of residuals. If there's any kind of structure in them (e.g. if they start mostly below zero, then go above zero), this is a clue that the trend in your data may not be linear.
 
+### Interpreting `lm()` output
+
+#### Continuous IVs
+
+When we have continuous independent variables (IVs), we're basically just doing regression. In this example, we want to know if past happiness (`Pasthapp`) predicts future happiness (`Futurehapp`).
+
+Our equation is:
+$$Futurehapp = \beta_{intercept}*1 + \beta_{1}Pasthapp + \epsilon$$
+
+where $\epsilon$ is error, and $\beta_{pasthapp}$ is our estimate/slope for `Pasthapp`.
+
+```{r fig.width=4, fig.height=5}
+d0 = read.csv("http://web.stanford.edu/class/psych252/data/hw2data.csv")
+
+library(ggplot2)
+ggplot(data=d0, aes(x=Pasthapp, y=Futurehapp)) +
+  geom_point(size=2, alpha=0.8) + 
+  geom_smooth(method=lm, color='red')
+```
+
+``` {r regression}
+res1a = lm(Futurehapp ~ Pasthapp, data = d0)
+summary(res1a)
+```
+
+Here, we get many useful things from our `lm()` output. First, past happiness is explaining significant variance in future happiness (~9%), $F(1, 61)=7.095, p < 0.01$. Perhaps more informative, looking at the **coefficients**, we can see that our intercept = 2.95. That is, when past happiness = 0, our future happiness is at 2.95; this can be viewed in the plot! Then, our estimate for the effect of `Pasthapp` on `Futurehapp` is 0.27, such that as past happiness increases by one unit, future happiness should increase by 0.27, $t(61)=2.66, p < 0.01$.
+
+##### Scaling
+
+Perhaps we want to know know what the mean value of future happiness is when someone is at the mean level of past happiness. Here, we have to **center** `Pasthapp`, such that the mean level of `Pasthapp` = 0 (i.e., by subtracting the mean from each data point); now, the intercept of our  model (where x=0) will be at the mean level of past happinesss. Further, we might want to **standardize** `Pasthapp`, so that the slope/estimate indicates that an increase in one standard deviation of past happiness leads to an $?$ increase in future happiness. We can do this using the `scale()` function. Not that if we just wanted to center (subtract the mean), we can use the same function like this: `scale(IV, scale=FALSE)`.
+
+``` {r fig.width=4, fig.height=5}
+res1b = lm(Futurehapp ~ scale(Pasthapp), data = d0)
+summary(res1b)
+
+ggplot(data=d0, aes(x=scale(Pasthapp), y=Futurehapp)) +
+  geom_point(size=2, alpha=0.8) + 
+  geom_smooth(method=lm, color='red') +
+  geom_vline(x=0, color='blue', linetype='longdash')
+```
+
+Now, our intercept = 4.25, showing us that at the mean level of past happiness, future happiness is 4.25. Further, we see that for every one standard deviation increase in past hapiness, future hapiness increases by 0.96, $t(61)=2.66, p <0.01$. Note that the statistic and p-value are the same as when we didn't standardize past happiness!
+
+#### Categorical IVs
+
+First, make sure factors in your data frame are being interpreted as factors!
+```{r}
+str(d0)
+d0$Type = factor(d0$Type, levels=c(1,2,3), labels = c('free', 'biased', 'varied'))
+str(d0)
+```
+
+Let's see if `Type` predicts future happiness.
+```{r}
+ggplot(data=d0, aes(x=Type, y=Futurehapp, fill=Type)) +
+  geom_boxplot()
+```
+
+In order to formally test this with `lm()`, we need to code the categorical variables as numbers. The default way R does this is using **dummy coding**. One level of Type is treated as the "baseline", and there are 2 contrasts ($k - 1$, where we have $k=3$ levels in the variable). One contrast compares the baseline level to the 2nd level, and the other compares the baseline level to the 3rd level. Let's check out our default contrasts:
+
+```{r}
+contrasts(d0$Type)
+```
+
+Here we have 2 dummy-coded contrasts, where our first contrast (biased) compares free (our baseline) to varied. The second contrast (varied) compares free to varied. 
+
+Our equation is:
+$$Futurehapp = \beta_{0}*1 + \beta_{1}biased + \beta_{2}varied + \epsilon$$
+
+```{r}
+res3 = lm(Futurehapp ~ Type, data=d0)
+summary(res3)
+```
+
+Here we're not doing a great job explaining future happiness (only ~3% of the variance is explained). Looking at our coefficients, our **intercept** indicates the mean level of future happiness for our baseline group, i.e., the "free" group. This is ~5 (which matches our plot above!). 
+
+Further, our first contrast, `Typebiased`, tells us that there's not a significant difference in future happiness between free and biased, $t(60)=-0.845, p =0.40$. The estimate/slope is informative, because that's the difference between free and biased; specifically, the biased group has a mean future happiness that is -0.74 from the free group ($5.045-0.74$) -- and our t-stat tells us it's not a significant difference!
+
+Our second contrast, `Typevaried`, tells us there is a marginally significant difference between the future happiness of the free and varied groups, such that the varied group has a future happiness level that is 1.82 points lower than the free group, $t(60)=-1.95, p=0.056$. Thus, the varied group is trending toward a lower fhapp level than the free group.
+
+#### Under the hood: the design matrix
+
+By dummy coding our categorical variables, this allows us to have numerical predictors of our continuous variable `Futurehapp`.
+
+```{r}
+contrasts(d0$Type)
+head(d0)
+```
+
+Specifically, for our "biased" contrast, everywhere `Type==biased` in our dataframe, we put a 1, and otherwise we put a 0. For our "varied" contrast, everywhere `Type==varied` we put a 1, and otherwise we put a 0. We also want to model an intercept, which we'll indicate as 1 (this will give us the mean of our baseline group, "free"). Together, the intercept and 2 contrasts make up our **design matrix**:
+
+```{r}
+head(model.matrix(res3)) # look at design matrix
+
+require(zoo)
+plot(zoo(data.frame(Fhapp=d0$Futurehapp, model.matrix(res3))))
+```
+
+The idea of a **general linear model** is to find some *weighted combination* of these 3 columns to predict our dependent variable (in this case, future happiness). That is, there's some parameter estimate/slope (indicated by $\beta$ in the equation below) for each column in our design matrix, and we want to find the estimates that will allow us to get as  close as possible at predicting our DV! 
+
+Our equation is:
+$$Futurehapp = \beta_{0}*1 + \beta_{1}biased + \beta_{2}varied + \epsilon$$
+
+So, for a given sample/row in our dataframe, we want to be able to accurately estimate their future happiness using $\beta_{0}*1 + \beta_{1}*Typebiased + \beta_{2}*Typevaried$. Let's see how we're doing with this model:
+
+```{r}
+res3$coefficients # these are our estimates
+head(model.matrix(res3)) # this is our design matrix
+
+head(t(t(model.matrix(res3)) * res3$coefficients)) # these are our estimates multiplied by our design matrix -- we just need to sum each row to get the estimated future happiness
+
+predicted_val = rowSums(t(t(model.matrix(res3)) * res3$coefficients))
+data_combined = data.frame(predicted=predicted_val, actual=d0$Futurehapp)
+
+# compare predicted vs. actual
+ggplot(data=data_combined, aes(x=predicted, y=actual))+
+  geom_point(alpha=0.7, position = position_jitter(w = 0.1, h = 0)) +
+  geom_smooth(method=lm)
+
+# note that we can also get the "predicted" values like this:
+# res3$fitted.values
+```
 
 ### Multiple Regression
 
 If you have multiple predictors, you want to know how the dependent variable would change if you wiggled one independent variable while keeping the others fixed. The geometric intuition here gets harder, though. Technically, when you add a variable, you add a dimension, so with two independent variables, you're finding the best *plane* that cuts through the points. This is why adding more independent variables will always reduce the residuals (in the extreme case, consider using one variable per data point, which would use enough dimensions to cut through every observation). This is a typical multiple regression analysis, with a model comparison at the end.
 
 ``` {r multiple regression}
-d0 = read.csv("http://web.stanford.edu/class/psych252/_downloads/hw2data.csv")
+d0 = read.csv("http://web.stanford.edu/class/psych252/data/hw2data.csv")
 
 res1a = lm(Futurehapp ~ Pasthapp, data = d0)
 summary(res1a)
@@ -67,13 +189,50 @@ summary(res1b)
 
 res2 = lm(Futurehapp ~ Pasthapp + Responsible, data = d0)
 summary(res2)
+```
 
+Let's check out our design matrix:
+```{r}
+res2$coefficients
+head(model.matrix(res2))
+```
+
+### Model comparison
+
+To determine if adding $p$ additional terms significantly **improves the model fit**, we can compare the **nested** models (by "nested" we just mean that one model contains all the terms of the other, and at least one additional term). Adding another term will likely always improve the model, but we want to know if it's improving the model enough. To test this, we basically compare the residual sum of squares (RSS) for the simple and complex model, and we want to figure if our **reduction in RSS** by adding the new terms is **"big enough"** to warrant adding those terms.
+
+In R, we get this basically for free:
+```{r}
 anova(res1b, res2)
 ```
 
-### Colinearity
+But if we wanted to calculate it by hand, here's what we'd do:
+```{r}
+k = 1 # parameters in first model
+p = 1 # additional parameters in complex model
+n = nrow(d0) # total number of observations
 
-Note that two or more independent variables in a model may correlate with one another. What will happen if you include two independent variables that are almost identical? (short answer: bad stuff; see [colinearity](https://en.wikipedia.org/wiki/Multicollinearity) on Wikipedia and this [app](https://gallery.shinyapps.io/collinearity/). ) 
+RSS_simple = sum(res1b$residuals^2)
+RSS_complex = sum(res2$residuals^2)
+
+SS_diff = (RSS_simple-RSS_complex)/p
+denom = RSS_complex/(n-(k+p+1))
+
+F_stat = SS_diff/denom; F_stat
+
+pf(F_stat, df1 = p, df2=(n-(k+p+1)), lower.tail=FALSE)
+```
+
+Here, the inclusion of past happiness significantly improved the model fit, $F(1, 60) = 9.33, p < 0.01$. Thus, let's go with the more complex model, since it's doing a significantly better job explaining the data!
+
+```{r}
+plot(zoo(data.frame(Fhapp=d0$Futurehapp, model.matrix(res2))))
+```
+
+
+### Collinearity
+
+Note that two or more independent variables in a model may **correlate** with one another. What will happen if you include two independent variables that are almost identical? (short answer: bad stuff; see [colinearity](https://en.wikipedia.org/wiki/Multicollinearity) on Wikipedia and this [app](https://gallery.shinyapps.io/collinearity/). ) 
 
 ``` {r correlations between multiple variables}
 d0_corr = data.frame(cbind(d0$Futurehapp, d0$Responsible, d0$Pasthapp))
