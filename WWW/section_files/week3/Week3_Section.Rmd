@@ -195,7 +195,13 @@ Let's check out our design matrix:
 ```{r}
 res2$coefficients
 head(model.matrix(res2))
+
+# Interaction model
+res3 = lm(Futurehapp ~ Pasthapp * Responsible, data = d0)
+head(model.matrix(res3))
 ```
+
+Note that the inclusion of an interaction term is literally adding a column of the **interaction** (multiplication) of those two columns!
 
 ### Model comparison
 
@@ -223,11 +229,33 @@ F_stat = SS_diff/denom; F_stat
 pf(F_stat, df1 = p, df2=(n-(k+p+1)), lower.tail=FALSE)
 ```
 
-Here, the inclusion of past happiness significantly improved the model fit, $F(1, 60) = 9.33, p < 0.01$. Thus, let's go with the more complex model, since it's doing a significantly better job explaining the data!
+Here, the inclusion of past happiness significantly improved the model fit, $F(1, 60) = 9.33, p < 0.01$. Thus, let's go with the more complex model, since it's doing a significantly better job explaining the data (less is unexplained)!
 
 ```{r}
 plot(zoo(data.frame(Fhapp=d0$Futurehapp, model.matrix(res2))))
 ```
+
+#### Interpreting multiple variables in model
+```{r}
+res2 = lm(Futurehapp ~ Pasthapp + Responsible, data = d0)
+summary(res2)
+
+res2a = lm(Futurehapp ~ scale(Pasthapp) + scale(Responsible), data = d0)
+summary(res2a)
+```
+
+In our first model, our intercept is the level of `Futurehapp` when `Pasthapp` and `Responsible` are equal to 0. In our second model, our intercept is the level of `Futurehapp` when `Pasthapp` and `Responsible` are equal to 0 -- but here, that is when they are at their mean, since we've standardized those variables! Note that the estimates for both of the IVs are the same in both models. Similarly, in both models, we are looking at the effect of one IV, **controlling for** the other IV.
+
+
+```{r}
+res4 = lm(Futurehapp ~ Type, data = d0)
+summary(res4)
+
+res4a = lm(Futurehapp ~ scale(Pasthapp) + Type, data = d0)
+summary(res4a)
+```
+
+Here, when **controlling for** past happiness levels, the varied group has lower future happiness (2.6 points lower) than the baseline, "free" group, $t(59)=-2.96, p < 0.01$.
 
 
 ### Collinearity
