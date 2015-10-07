@@ -713,12 +713,15 @@ First, let's determine a null distribution and its 95% CI:
 alpha = 0.05
 
 null_mean <- 5
-sample_s <- 2
-sample_n <- 20
+sample_s <- 1.5
+sample_n <- 36
 
 sterr = sample_s/sqrt(sample_n)
 
-critical_t = qt(alpha/2, df=sample_n-1, lower.tail=FALSE); print(critical_t)
+critical_t = qt(alpha, df=sample_n-1, lower.tail=FALSE); print(critical_t)
+
+# if 2-sided
+#critical_t = qt(alpha/2, df=sample_n-1, lower.tail=FALSE); print(critical_t)
 
 # 95% CI around null mean
 m_error = critical_t*sterr; print(m_error)
@@ -727,14 +730,14 @@ null_lower = null_mean - m_error; null_lower
 null_upper = null_mean + m_error; null_upper
 ```
 
-So, we basically want to find the area that's under our $H_a$ curve, to the right of the critical region defined from the null distribution (though also there might be some *slight* chance of rejecting the null on the left side).
+So, we basically want to find the area that's under our $H_a$ curve, to the right of the critical region defined from the null distribution (though also there might be some *slight* chance of rejecting the null on the left side if we have a 2-sided test).
 
 $$P(\bar{x} > cutoff | H_a \text{ is true})$$
 
-We can get this by converting the lower/upper bounds on the null distribution into $t$-scores (i.e., standardizing the cutoffs) relative to the alternate hypothesis mean, and then we can use the $t$ distribution to figure out the area under the alternate hypothesis curve that's *not* within the null 95% CI (this will mostly be the region > the upper bound!
+We can get this by converting the lower/upper bounds on the null distribution into $t$-scores (i.e., standardizing the cutoffs) relative to the alternate hypothesis mean, and then we can use the $t$ distribution to figure out the area under the alternate hypothesis curve that's *not* within the null 95% CI (this will mostly be the region > the upper bound)!
 
 ```{r mean CI}
-delta = 1.5 # difference between null and alternate hypothesis means
+delta = .7 # difference between null and alternate hypothesis means
 alt_mean = null_mean + delta; print(alt_mean)
 
 # if alternative hypothesis true, calculate tscores for null lower/upper bounds
@@ -742,7 +745,10 @@ tscore_lower = (null_lower-alt_mean) / sterr
 tscore_upper = (null_upper-alt_mean) / sterr 
 
 # this gives us the area under Ha that's within the 95% CI of H0
-beta = pt(tscore_upper, df = n-1) - pt(tscore_lower, df = n-1)
+beta = pt(tscore_upper, df = sample_n-1)
+
+# if 2-sided
+# beta = pt(tscore_upper, df = sample_n-1) - pt(tscore_lower, df = sample_n-1)
 
 print(beta)
 
@@ -755,8 +761,9 @@ power = 1-beta; power
 Doing this same calculation in one line:
 
 ```{r power.t.test}
-power.t.test(n=n,delta=1.5,sd=s,sig.level=0.05, 
-             type="one.sample",alternative="two.sided")
+power.t.test(n=sample_n,delta=delta,sd=sample_s,sig.level=0.05, 
+             type="one.sample",alternative="one.sided")
+             #alternative="two.sided")
 ```
 
 What else can this function do?

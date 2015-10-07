@@ -60,7 +60,7 @@ When we have continuous independent variables (IVs), we're basically just doing 
 Our equation is:
 $$Futurehapp = \beta_{intercept}*1 + \beta_{1}Pasthapp + \epsilon$$
 
-where $\epsilon$ is error, and $\beta_{pasthapp}$ is our estimate/slope for `Pasthapp`.
+where $\epsilon$ is error, and $\beta_{1}$ is our estimate/slope for `Pasthapp`.
 
 ```{r fig.width=4, fig.height=5}
 d0 = read.csv("http://web.stanford.edu/class/psych252/data/hw2data.csv")
@@ -109,7 +109,7 @@ ggplot(data=d0, aes(x=Type, y=Futurehapp, fill=Type)) +
   geom_boxplot()
 ```
 
-In order to formally test this with `lm()`, we need to code the categorical variables as numbers. The default way R does this is using **dummy coding**. One level of Type is treated as the "baseline", and there are 2 contrasts ($k - 1$, where we have $k=3$ levels in the variable). One contrast compares the baseline level to the 2nd level, and the other compares the baseline level to the 3rd level. Let's check out our default contrasts:
+In order to formally test this with `lm()`, we need to code the categorical variables as numbers. The default way R does this is using **dummy coding** (for more info, check out the [wiki page](https://en.wikipedia.org/wiki/Dummy_variable_(statistics))). One level of Type is treated as the "baseline", and there are 2 contrasts ($k - 1$, where we have $k=3$ levels in the variable). One contrast compares the baseline level to the 2nd level, and the other compares the baseline level to the 3rd level. Let's check out our default contrasts:
 
 ```{r}
 contrasts(d0$Type)
