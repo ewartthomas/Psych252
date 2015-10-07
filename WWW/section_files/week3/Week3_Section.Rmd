@@ -179,8 +179,6 @@ ggplot(data=data_combined, aes(x=predicted, y=actual))+
 If you have multiple predictors, you want to know how the dependent variable would change if you wiggled one independent variable while keeping the others fixed. The geometric intuition here gets harder, though. Technically, when you add a variable, you add a dimension, so with two independent variables, you're finding the best *plane* that cuts through the points. This is why adding more independent variables will always reduce the residuals (in the extreme case, consider using one variable per data point, which would use enough dimensions to cut through every observation). This is a typical multiple regression analysis, with a model comparison at the end.
 
 ``` {r multiple regression}
-d0 = read.csv("http://web.stanford.edu/class/psych252/data/hw2data.csv")
-
 res1a = lm(Futurehapp ~ Pasthapp, data = d0)
 summary(res1a)
 
@@ -256,6 +254,17 @@ summary(res4a)
 ```
 
 Here, when **controlling for** past happiness levels, the varied group has lower future happiness (2.6 points lower) than the baseline, "free" group, $t(59)=-2.96, p < 0.01$.
+
+Plot quickly!
+```{r}
+library(effects)
+plot(allEffects(res4a))
+plot(allEffects(lm(Futurehapp ~ Type, data = d0))) # not controlling for pasthapp
+```
+
+```{r}
+plot(allEffects(lm(Futurehapp ~ scale(Pasthapp) * Type, data = d0)))
+```
 
 
 ### Collinearity
