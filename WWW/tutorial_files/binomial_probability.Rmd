@@ -1,5 +1,11 @@
-Coin flipping, probability, and logistic regression
-===================================================
+---
+title: "Coin flipping, probability, and logistic regression"
+output:
+  html_document:
+    highlight: pygments
+    theme: cerulean
+    toc: yes
+---
 
 In this notebook, I'll try to connect some of the ideas from class about random variables and probability to statistical models and tests in the context of a simple, concrete example.
 
