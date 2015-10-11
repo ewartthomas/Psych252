@@ -94,3 +94,19 @@ An example of running a glm (with lm()) that has a continuous and categorical (d
 
 
 ----------------------------
+
+
+
+Week 4
+################
+
+Section file
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Working through a complete linear modeling problem.
+
+[`Rmd <http://www.stanford.edu/class/psych252/section/Week4_Section.Rmd>`_]
+[`html <http://www.stanford.edu/class/psych252/section/Week4_Section.html>`_]
+
+----------------------------
+
