@@ -1,0 +1,222 @@
+---
+title: "Section: Week 4"
+#runtime: shiny
+output:
+  html_document:
+    highlight: pygments
+    theme: flatly
+    toc: yes
+---
+
+## Preliminaries/review topics
+
+* Questions about quiz?
+
+## Finish Week 3 lm/glm Bootcamp
+
+The following topics are covered in some detail in Week 3 and are built upon in the following code:
+
+* lm() bootcamp
+* glm() bootcamp
+* Correlated predictors
+* Model Comparison
+
+(See Week3_Section)
+
+## Working Through a Complete LM Problem
+
+We've now introduced the linear model and its implementation in R `lm()`, as well as logistic regression via `glm()`. The next step is to understand the complete thought process that goes into working through building a regression model. We'll use problem L from HW3 as an example. Note that much of Quiz #2 is focused on doing statistics by hand especially from incomplete data, and the rest of HW3 will focus on those aspects. We will review more of these topics in the Week 5 section before the in class quiz #2.
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+```
+
+
+### Homework 3 Problem L
+
+We want to know whether the perception that jury members hold of a defendant might influence the outcome of a case (i.e. whether individual jurors vote guilty or not guilty). To study this the experimenter had participants read a case outline and then answer questions about the case. The case outline states the main facts of a robbery, including eye-witness testimony about the identity and behavior of the robber. Participants are asked:
+
+* Do you think that the defendant is guilty? ('guilt': 1 = Definitely Not Guilty, 2 = Probably Not Guilty, 3 = Probably Guilty, or 4 = Definitely Guilty)
+* On the basis of the evidence, do you think that the defendant is mentally ill? ('mentill': 1 = Yes or 0 = No)
+* Using a 0 (Very Low) to 10 (Very High) scale, state how much you think the defendant is a future threat ('futhrt') to society.
+
+The data are recorded in the dataset mentillness.csv
+
+```{r}
+df_jury = read.csv('http://www.stanford.edu/class/psych252/data/mentillness.csv')
+```
+
+Let's begin by looking at our dataset to understand its formatting
+
+```{r}
+str(df_jury)
+```
+
+It looks like mental illness is coded as a quantitative variable even though it's a facor. Let's recode this:
+
+```{r}
+df_jury = df_jury %>%
+  mutate(mentill=factor(mentill,levels=c(0,1),labels=c("No","Yes")))
+```
+
+Now we believe that whether a defendant was judged to be mentally ill influenced the likelihood they would be deemed a future threat to society. This is the model $Future Threat ~ Mental Illness$. Let's investigate this model. Note that since we didn't experimentally manipulate perceptions here this is not a test of causality, it may be equally true that the perception of future threat influences the likelihood someone is deemed mentally ill.
+
+```{r}
+rs = lm(futhrt ~ mentill, data=df_jury)
+```
+
+Remember that R by default used "dummy coding" to represent the categorical variable **Perception of Mental Illness*. Let's quickly check what the dummy coding looked like:
+
+```{r}
+contrasts(df_jury$mentill)
+```
+
+This dummy coding sets the baseline value (the intercept in our model) to be the value when `mentill == No`. The value of the first coefficient then becomes the difference between the baseline and the group `mentill == Yes`. In this case this makes sense, since we believe that perception of mental illness has effect, so this is the most intuitive way to set up the variables.
+
+```{r}
+summary(rs)
+```
+
+Now, we could stop here and write up our results. You would want to report something to the following effect: We computed a linear model predicting the perception of future threat from the perception of mental illness. We found that the perception of future threat does depend on whether a juror believes a defendant to be mentally ill, $b_{mentill} = .8, *t* = 4.02, *p* < .001; *F*(1,238) = 16.17, *p* < .001$. When a juror perceives the defendant as ill they were more likely to judge them a future threat.
+
+Again, we could stop here, but as sophisticated students you probably want to answer a second question: is this a large effect? Remember that statistical significance is not an indication of a relevant result, simply that it was unlikely. Our result suggest that the perception of mental illness increases the score on the future threat scale by ~0.8 points. How large is this effect? One way to estimate the difference is to re-calculate the change in terms of Z scores. We can do this by scaling future threat:
+
+```{r}
+rs_scaled = lm(scale(futhrt) ~ mentill, data=df_jury)
+summary(rs_scaled)
+```
+
+Now we can see that the change in future threat corresponds to a difference of about 0.5 standard deviations. Another way to interpret the result is to use the eta-squared statistic mentioned in the HW-3 packet. Since there is only one effect in our model we can use the F-statistic and the degrees of freedom to compute $\eta^2$.
+
+```{r}
+eta2 = 1 / (1 + 238/16.17)
+sqrt(eta2)
+```
+
+In this case the variability explained by our model is a **moderate** effect of between 0.24 and 0.36. 
+
+So far we have purely intepreted the results in terms of the statistics, let's take a look at a visualization to better understand the effect.
+
+First, lets summarise the results so we can plot the raw data and the summary statistics on top of each other.
+
+```{r}
+df_jury_m = df_jury %>%
+  group_by(mentill) %>%
+  summarise(ci=1.96*sd(futhrt)/sqrt(n()),mu=mean(futhrt))
+```
+
+Now let's do the plotting:
+
+```{r}
+ggplot() +
+  geom_point(data=df_jury,
+             aes(mentill, futhrt, color=mentill),
+             position=position_jitter(height=0,width=0.05)) +
+  geom_point(data=df_jury_m,
+             aes(mentill, mu),
+             size=5) +
+  geom_errorbar(data=df_jury_m,
+                aes(mentill, ymin=mu-ci, ymax=mu+ci),
+                width=0.1,
+                size=1) +
+  theme_bw() +
+  scale_y_continuous(breaks=c(0:10)) +
+  xlab('Perception of Mental Illness') +
+  ylab('Perception of Future Threat')
+```
+
+As the plot shows, this looks like a moderate effect. Clearly there is a change in the perception of future threat, but it is small and surrounded by considerable variance.
+
+### Homework 3 Problem L-2
+
+Now, our causal model is that the perception of a future threat is a factor in the decision to vote guilty or not guilty. Again, this is a model that we can test using our data. Even more interestingly we might imagine that defendants who **are** perceived as mentally ill might be thought of being not guilty, despite being a future threat--suggesting a possible interaction. Let's take a look at the plots and then test for an interaction.
+
+```{r}
+ggplot() +
+  geom_point(data=df_jury,
+             aes(futhrt,guiltcat))
+```
+
+In this case it is appropriate to use **guilt category** as a continuous variable, since we assume there is some monotonic relationship between the increasing values. Note that if this isn't a linear relationship then our y-axis scale in these plots will be un-interpretable.
+
+Let's make the plot look a bit nicer to so we get a better sense of our data. This is particularly important because as it is we can't tell how much data is at each point in the plot:
+
+```{r}
+ggplot() +
+  geom_point(data=df_jury,
+             aes(futhrt,guiltcat),
+             position=position_jitter(height=0.05,width=0.05),
+             color='orange') +
+  theme_bw()
+```
+
+Let's not make the assumption immediately that this is a linear relationship, but allow also for a non-parametric variation.
+
+```{r}
+ggplot(data=df_jury,
+       aes(futhrt,guiltcat)) +
+  geom_point(position=position_jitter(height=0.05,width=0.05)) +
+  geom_smooth(method="lm", color='orange',size=1.5) +
+  geom_smooth(method="loess", color='red', se=F) +
+  theme_bw()
+```
+
+Take note of the fact that the non-parametric **loess** curve does not seem to be doing a better job of fitting our data, in fact it appears roughly linear. Now let's look into the interaction that we predicted we might observe.
+
+```{r}
+ggplot(data=df_jury,
+       aes(futhrt, guiltcat, color=mentill)) +
+  geom_point(position=position_jitter(height=0.05,width=0.05)) +
+  geom_smooth(method="lm", size=1.5) +
+  scale_color_brewer(palette="Paired") +
+  theme_bw()
+```
+
+Wow! This would make a great first year project. It looks like there may be a huge effect! Let's investigate the specifics of the effect using the linear model. We are now going to do the **model comparison** that we have been discussing in class and in section. We will build progressively more complex models and then look back on them to see whether the models were able to predict significantly more variance given the introduction of new parameters.
+
+```{r}
+rs_2 = lm(guiltcat ~ mentill, df_jury)
+rs_3 = lm(guiltcat ~ mentill + futhrt, df_jury)
+rs_4 = lm(guiltcat ~ mentill * futhrt, df_jury)
+rs_6 = lm(guiltcat ~ mentill * poly(futhrt, 2), df_jury)
+anova(rs_2, rs_3, rs_4, rs_6)
+```
+
+Without looking at the specifics of the models what can we conclude? First, we can conclude that adding future threat as a predictor to the regression is important, this is the difference between models `rs_3` and `rs_2`. Second, we can conclude that there is an interaction effect between future threat and mental illness. In short: the perception of future threat results in different guilt category predictions when mental illness is present and absent. Finally, we can conclude that there is not a polynomial effect of future threat, adding these additional polynomial predictors improved our model--but not enough given the additional degrees of freedom we allowed for.
+
+The final comparison could also be accomplished without the other parameters, although we get more or less the exact same non-significant difference. Note that in the first model there was an additional polynomial interaction term that wouldn't show up in this simplified model:
+
+```{r}
+rs_linear = lm(guiltcat ~ futhrt, df_jury)
+rs_quad = lm(guiltcat ~ poly(futhrt,2), df_jury)
+anova(rs_linear, rs_quad)
+```
+
+### Plotting Non-Linear Effects
+
+A final point before we end: how do we graph the quadratic effects? There are a few options. One option is to take advantage of a powerful library in R called the `effects` package:
+
+```{r}
+library(effects)
+```
+
+```{r}
+plot(allEffects(rs_6))
+```
+
+The effects package will try to plot each of the coefficients in your model in a logical way. In this case that means making a facet grid where each plot contains the effect of future threat on guilt category. The plot combined the linear and quadratic effects together--which may be a disadvantage depending on your specific interests. Compare this to the ggplot code that produces the same result:
+
+```{r}
+ggplot(data=df_jury,
+       aes(futhrt, guiltcat, color=mentill)) +
+  facet_grid(.~mentill) +
+  geom_point(position = position_jitter(width=0.05, height=0.05)) +
+  geom_smooth(method="lm", formula=y~poly(x,2)) +
+  theme_bw() +
+  xlab("Perception of Future Threat") +
+  ylab("Perception of Guilt Category") 
+```
+
+In complex models that cannot be easily plotted (e.g. a multiple regression with several interaction terms), the `effects` package becomes more powerful than ggplot(), since it will show you each of your effects individually. Keep it in your back pocket for the future!
