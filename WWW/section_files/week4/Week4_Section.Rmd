@@ -214,6 +214,7 @@ ggplot(data=df_jury,
 Wow! This would make a great first year project. It looks like there may be a huge effect! Let's investigate the specifics of the effect using the linear model. We are now going to do the **model comparison** that we have been discussing in class and in section. We will build progressively more complex models and then look back on them to see whether the models were able to predict significantly more variance given the introduction of new parameters.
 
 ```{r}
+contrasts(df_jury$mentill)
 rs_2 = lm(guiltcat ~ mentill, df_jury)
 rs_3 = lm(guiltcat ~ mentill + futhrt, df_jury)
 anova(rs_2, rs_3)
@@ -225,7 +226,7 @@ Off the bat we can see that adding future threat to the model significantly impr
 summary(rs_3)
 ```
 
-Here, we see there's a positive effect of perceived future threat on guilt when the person is not mentally ill, t(237)=2.54, p < 0.05 (see the interactions below to see how the effect of perceived future threat on guilt might change if the person *is* mentally ill!). Further, controlling for future threat, the ratings of guilt are lower if the person is mentally ill, t(237)=-15.41, p < 0.001.
+Here, we see there's a positive effect of perceived future threat on guilt, controlling for mental illness, t(237)=2.54, p < 0.05 (see the interactions below to see how the effect of perceived future threat on guilt might change if the person *is* mentally ill!). Further, controlling for future threat, the ratings of guilt are lower if the person is mentally ill, t(237)=-15.41, p < 0.001.
 
 ```{r}
 # interpret the intercept below as the mean "guilt" for a non-mentally ill person, and the intercept + the estimate for mentillYES as the mean "guilt" for a mentally ill person
@@ -241,9 +242,14 @@ anova(rs_2, rs_3, rs_4, rs_6)
 
 ```{r}
 # Side note on how scaling effects output when including an interaction!
-# summary(rs_4)
+# summary(rs_4) # effect of mental illness when futhrt=0
 # rs_4s = lm(guiltcat ~ mentill * scale(futhrt, scale=FALSE), df_jury)
-# summary(rs_4s)
+# summary(rs_4s) # effect of mental illness at the *mean* of futhrt
+# # in both these cases, we see the effect of futhrt when mentill == 0/Not mentally ill. 
+# # what about the effect of futhrt when mentill==1/Yes mentally ill?
+# contrasts(df_jury$mentill) = c(1,0); contrasts(df_jury$mentill)
+# rs_4s_y = lm(guiltcat ~ mentill * scale(futhrt, scale=FALSE), df_jury)
+# summary(rs_4s_y)
 ```
 
 Without looking at the specifics of the models what can we conclude? First, we can conclude that adding future threat as a predictor to the regression is important, this is the difference between models `rs_3` and `rs_2`. Second, we can conclude that there is an interaction effect between future threat and mental illness. In short: the perception of future threat results in different guilt category predictions when mental illness is present and absent. Finally, we can conclude that there is not a polynomial effect of future threat, adding these additional polynomial predictors improved our model--but not enough given the additional degrees of freedom we allowed for.
