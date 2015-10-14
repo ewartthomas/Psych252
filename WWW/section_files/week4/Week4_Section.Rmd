@@ -123,13 +123,15 @@ Again, we could stop here, but as sophisticated students you probably want to an
 ```{r}
 rs_scaled = lm(scale(futhrt) ~ mentill, data=df_jury)
 summary(rs_scaled)
+anova(rs_scaled)
 ```
 
 Now we can see that the change in future threat corresponds to a difference of about 0.5 standard deviations. Another way to interpret the result is to use the eta-squared statistic mentioned in the HW-3 packet. Since there is only one effect in our model we can use the F-statistic and the degrees of freedom to compute $\eta^2$.
 
 ```{r}
-eta2 = 1 / (1 + 238/16.17)
-sqrt(eta2)
+eta2 = 1 / (1 + 238/16.17); sqrt(eta2) # 1/1/(df/F)
+eta2 = 16.17/(16.17 + 238); sqrt(eta2) #F/(F+df) = t^2/(t^2+df)
+eta2 = 15.201/(223.799+15.201); eta2 # SSmodel/SStotal
 ```
 
 In this case the variability explained by our model is a **moderate** effect of between 0.24 and 0.36. 

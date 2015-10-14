@@ -115,6 +115,13 @@ Exploring logistic regression
 
 [`Advanced Tutorial <http://web.stanford.edu/class/psych253/section/section_4/section4.html>`_]
 
-[`App <https://supsych.shinyapps.io/logistic_regression>`_]: Change the slope and intercept, and see how it changes the fit to the data
+[`Logistic Regression App <https://supsych.shinyapps.io/logistic_regression>`_]: Change the slope and intercept, and see how it changes the fit to the data
+
+
+Collinearity in multiple regression
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+[`Collinearity App <https://gallery.shinyapps.io/collinearity/>`_]: Change the predictor covariance, and see how it changes the magnitude of coefficients in full model
+
 
 ----------------------------
