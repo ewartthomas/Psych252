@@ -240,18 +240,6 @@ rs_6 = lm(guiltcat ~ mentill * poly(futhrt, 2), df_jury)
 anova(rs_2, rs_3, rs_4, rs_6)
 ```
 
-```{r}
-# Side note on how scaling effects output when including an interaction!
-# summary(rs_4) # effect of mental illness when futhrt=0
-# rs_4s = lm(guiltcat ~ mentill * scale(futhrt, scale=FALSE), df_jury)
-# summary(rs_4s) # effect of mental illness at the *mean* of futhrt
-# # in both these cases, we see the effect of futhrt when mentill == 0/Not mentally ill. 
-# # what about the effect of futhrt when mentill==1/Yes mentally ill?
-# contrasts(df_jury$mentill) = c(1,0); contrasts(df_jury$mentill)
-# rs_4s_y = lm(guiltcat ~ mentill * scale(futhrt, scale=FALSE), df_jury)
-# summary(rs_4s_y)
-```
-
 Without looking at the specifics of the models what can we conclude? First, we can conclude that adding future threat as a predictor to the regression is important, this is the difference between models `rs_3` and `rs_2`. Second, we can conclude that there is an interaction effect between future threat and mental illness. In short: the perception of future threat results in different guilt category predictions when mental illness is present and absent. Finally, we can conclude that there is not a polynomial effect of future threat, adding these additional polynomial predictors improved our model--but not enough given the additional degrees of freedom we allowed for.
 
 The final comparison could also be accomplished without the other parameters, although we get more or less the exact same non-significant difference. Note that in the first model there was an additional polynomial interaction term that wouldn't show up in this simplified model:
@@ -261,6 +249,82 @@ rs_linear = lm(guiltcat ~ futhrt, df_jury)
 rs_quad = lm(guiltcat ~ poly(futhrt,2), df_jury)
 anova(rs_linear, rs_quad)
 ```
+
+### How scaling affects output when including an interaction
+
+```{r}
+summary(rs_4) # effect of mental illness when futhrt=0
+rs_4s = lm(guiltcat ~ mentill * scale(futhrt, scale=FALSE), df_jury)
+summary(rs_4s) # effect of mental illness at the *mean* of futhrt
+```
+
+In the first case, we see the effect of mental illness on guilt when future threat = 0; in the second case, we see the effect of mental illness on guilt when future threat is at the mean.
+
+#### Visualize model interactions
+
+##### Interaction, not centered:
+
+```{r, echo=FALSE, fig.width=5, fig.height=3}
+coefs.rs_4 = coefficients(rs_4)
+
+# calculate estimates
+dat = data.frame(futhrt = df_jury$futhrt)
+dat$mentilNO = coefs.rs_4[[1]] + coefs.rs_4[[2]]*0 + coefs.rs_4[[3]]*dat$futhrt + coefs.rs_4[[4]]*dat$futhrt*0
+
+dat$mentilYES = coefs.rs_4[[1]] + coefs.rs_4[[2]]*1 + coefs.rs_4[[3]]*dat$futhrt + coefs.rs_4[[4]]*dat$futhrt*1
+
+# plot
+dat_long = gather(dat, 'mentil', 'estimate', 2:3)
+ggplot(data=dat_long, aes(x=futhrt, y=estimate, colour=mentil)) + 
+  geom_line() + geom_vline(x=0, linetype='longdash')
+```
+
+##### Interaction, centered:
+
+```{r, echo=FALSE, fig.width=5, fig.height=3}
+coefs.rs_4s = coefficients(rs_4s)
+
+# calculate estimates
+dat = data.frame(futhrt = scale(df_jury$futhrt, scale=FALSE))
+dat$mentilNO = coefs.rs_4s[[1]] + coefs.rs_4s[[2]]*0 + coefs.rs_4s[[3]]*dat$futhrt + coefs.rs_4s[[4]]*dat$futhrt*0
+
+dat$mentilYES = coefs.rs_4s[[1]] + coefs.rs_4s[[2]]*1 + coefs.rs_4s[[3]]*dat$futhrt + coefs.rs_4s[[4]]*dat$futhrt*1
+
+# plot
+dat_long = gather(dat, 'mentil', 'estimate', 2:3)
+ggplot(data=dat_long, aes(x=futhrt, y=estimate, colour=mentil)) + 
+  geom_line() + geom_vline(x=0, linetype='longdash')
+```
+
+##### No interaction term:
+
+```{r, echo=FALSE, fig.width=5, fig.height=3}
+coefs.rs_3 = coefficients(rs_3)
+
+# calculate estimates
+dat = data.frame(futhrt = df_jury$futhrt)
+dat$mentilNO = coefs.rs_3[[1]] + coefs.rs_3[[2]]*0 + coefs.rs_3[[3]]*dat$futhrt
+
+dat$mentilYES = coefs.rs_3[[1]] + coefs.rs_3[[2]]*1 + coefs.rs_3[[3]]*dat$futhrt
+
+# plot
+dat_long = gather(dat, 'mentil', 'estimate', 2:3)
+ggplot(data=dat_long, aes(x=futhrt, y=estimate, colour=mentil)) + 
+  geom_line() + geom_vline(x=0, linetype='longdash')
+```
+
+
+In both these cases, we see the effect of futhrt when mentill == 0 (not mentally ill). 
+What about the effect of futhrt when mentill==1 (yes mentally ill)?
+
+```{r}
+contrasts(df_jury$mentill) = c(1,0); contrasts(df_jury$mentill)
+rs_4s_y = lm(guiltcat ~ mentill * scale(futhrt, scale=FALSE), df_jury)
+summary(rs_4s_y)
+```
+
+
+
 
 ### Plotting Non-Linear Effects
 
