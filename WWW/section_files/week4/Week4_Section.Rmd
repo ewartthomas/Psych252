@@ -31,6 +31,9 @@ We've now introduced the linear model and its implementation in R `lm()`, as wel
 library(dplyr)
 library(tidyr)
 library(ggplot2)
+
+# change ggplot background to white, increase font size
+theme_set(theme_bw(base_size = 18)) 
 ```
 
 
@@ -236,6 +239,13 @@ rs_6 = lm(guiltcat ~ mentill * poly(futhrt, 2), df_jury)
 anova(rs_2, rs_3, rs_4, rs_6)
 ```
 
+```{r}
+# Side note on how scaling effects output when including an interaction!
+# summary(rs_4)
+# rs_4s = lm(guiltcat ~ mentill * scale(futhrt, scale=FALSE), df_jury)
+# summary(rs_4s)
+```
+
 Without looking at the specifics of the models what can we conclude? First, we can conclude that adding future threat as a predictor to the regression is important, this is the difference between models `rs_3` and `rs_2`. Second, we can conclude that there is an interaction effect between future threat and mental illness. In short: the perception of future threat results in different guilt category predictions when mental illness is present and absent. Finally, we can conclude that there is not a polynomial effect of future threat, adding these additional polynomial predictors improved our model--but not enough given the additional degrees of freedom we allowed for.
 
 The final comparison could also be accomplished without the other parameters, although we get more or less the exact same non-significant difference. Note that in the first model there was an additional polynomial interaction term that wouldn't show up in this simplified model:
@@ -284,11 +294,58 @@ str(d)
 
 How is murder affected by per capita income, controlling for population?
 ```{r}
+summary(lm(Murder ~ Income, data=d))
 summary(lm(Murder ~ Income + Population, data=d))
 ```
 
 ```{r}
 covmodel = lm(Income ~ Population, data=d)
-summary(lm(d$Murder ~ covmodel$residuals)) # how income, controlling for population (regressing out variance due to population), explains murder
+d$income.resid = covmodel$residuals
+summary(lm(Murder ~ income.resid, data=d)) # how income, controlling for population (regressing out variance due to population), explains murder
 ```
 
+Graphically this looks like:
+```{r fig.width=3, fig.height=3}
+ggplot(data=d, aes(x=Income, y=Murder)) +
+  geom_point() + geom_smooth(method='lm')
+
+ggplot(data=d, aes(x=Income, y=Population)) +
+  geom_point() + geom_smooth(method='lm')
+
+ggplot(data=d, aes(x=income.resid, y=Population)) +
+  geom_point() + geom_smooth(method='lm')
+
+ggplot(data=d, aes(x=income.resid, y=Murder)) +
+  geom_point() + geom_smooth(method='lm')
+```
+
+Literally we are looking at the *unique*/*independent* contribution income makes in predicting murder rates, aside from what's also predicted by population.
+
+This gets problematic when we have two predictors that are highly correlated, since they don't have much unique variance that could be explaining our DV!
+
+For instance, income is pretty correlated with high school graduation rate. 
+```{r}
+summary(lm(d$Income~d[,'HS Grad'])) #note the weird formatting since HS Grad is 2 words! always make your col names one contiguous name
+```
+
+```{r}
+summary(lm(Murder ~ Income + Population + d[,'HS Grad'], data=d)) #
+```
+
+So income is no longer a significant predictor of murder, when controlling for high school graduation rate. That's because high school graduation rate and income are correlated, and when removing the variance in income that is explained by high school graduation rate, there's nothing left to explain murder rates! However, there is unique variance in high school graduation rate that explains murder rates, when controlling for income!
+
+### A note about scaling & interpretations:
+```{r}
+rs_8 = lm(Murder ~ scale(Population, scale=FALSE) + 
+             scale(Illiteracy, scale=FALSE) *
+             scale(Area, scale=FALSE), data=d)
+
+# Compare the coefficients
+coef(rs_8)
+coef(lm(Murder ~ Population + Illiteracy * Area, data=d)) #
+
+# Visualize the (marginal) continuous interaction
+plot(allEffects(rs_8))
+```
+
+For some more notes, check out this [page](https://www3.nd.edu/~rwilliam/stats2/l53.pdf).

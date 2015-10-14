@@ -18,5 +18,6 @@ Chi-squared test
 
   $\chi^2$ (`r rs$parameter`, N=`r sum(rs$observed)`) = `r rs$statistic`, p = `r rs$p.value`
 
+### Example writeups
 
 ---------------------------
