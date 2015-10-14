@@ -111,8 +111,10 @@ Working through a complete linear modeling problem.
 Exploring logistic regression
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Change the slope and intercept, and see how it changes the fit to the data
+[`Tutorial <http://web.stanford.edu/class/psych252/tutorials/Tutorial_LogisticRegression.html>`_]
 
-[`App <https://supsych.shinyapps.io/logistic_regression>`_]
+[`Advanced Tutorial <http://web.stanford.edu/class/psych253/section/section_4/section4.html>`_]
+
+[`App <https://supsych.shinyapps.io/logistic_regression>`_]: Change the slope and intercept, and see how it changes the fit to the data
 
 ----------------------------
