@@ -108,5 +108,11 @@ Working through a complete linear modeling problem.
 [`Rmd <http://www.stanford.edu/class/psych252/section/Week4_Section.Rmd>`_]
 [`html <http://www.stanford.edu/class/psych252/section/Week4_Section.html>`_]
 
-----------------------------
+Exploring logistic regression
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Change the slope and intercept, and see how it changes the fit to the data
+
+[`App <https://supsych.shinyapps.io/logistic_regression>`_]
+
+----------------------------
