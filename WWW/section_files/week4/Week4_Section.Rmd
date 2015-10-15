@@ -57,7 +57,7 @@ Let's begin by looking at our dataset to understand its formatting
 str(df_jury)
 ```
 
-It looks like mental illness is coded as a quantitative variable even though it's a facor. Let's recode this:
+It looks like mental illness is coded as a quantitative variable even though it's a facor. Let's recode this (for help with these data wrangling functions check out [this](https://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf)):
 
 ```{r}
 df_jury = df_jury %>%
