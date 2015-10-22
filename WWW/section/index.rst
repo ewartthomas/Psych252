@@ -125,3 +125,29 @@ Collinearity in multiple regression
 
 
 ----------------------------
+
+
+Week 5
+################
+
+HW 3 Recap
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Check out the materials from 2013 section for more info.
+
+[`html <http://web.stanford.edu/class/psych252/section_2013/Section4.html>`_
+
+
+Practice interpreting lm() output
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+[`PDF <http://web.stanford.edu/class/psych252/section/week5/lm_output_prac.pdf>`_]
+
+
+Practice deciding what statistical test to use
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+[`PDF <http://web.stanford.edu/class/psych252/section/week5/whattest_blank.pdf>`_]
+
+
+----------------------------
