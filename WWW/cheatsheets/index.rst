@@ -42,6 +42,13 @@ one-way classification (i.e., a **goodness-of-fit test**) and 2 way classificati
 (i.e., a **contingency test**, or test of independence).
 
 
+Code for calculating some basic stats
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This R script has some helpful code for calculating chi-square tests, r correlation coefficient, etc. Might be useful for Quiz 2!
+
+[`R <http://www.stanford.edu/class/psych252/cheatsheets/Psych252_helpfulRcode.r>`_]
+
 
 Model comparison guidelines
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
