@@ -157,6 +157,7 @@ Practice deciding what statistical test to use
 Given sample scenarios, decide the best way to statistically test each hypothesis.
 
 [`PDF <http://web.stanford.edu/class/psych252/section/whattest_blank.pdf>`_]
+[`Solutions <http://web.stanford.edu/class/psych252/section/whattest_solutions.pdf>`_]
 
 
 ----------------------------
