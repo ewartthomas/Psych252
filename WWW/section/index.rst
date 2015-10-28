@@ -161,3 +161,16 @@ Given sample scenarios, decide the best way to statistically test each hypothesi
 
 
 ----------------------------
+
+
+Week 6
+################
+
+HW 4, interactions, contrasts, mediation
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+[`Rmd <http://web.stanford.edu/class/psych252/section/section_week6.Rmd>`_]
+[`html <http://web.stanford.edu/class/psych252/section/section_week6.html>`_]
+
+
+----------------------------

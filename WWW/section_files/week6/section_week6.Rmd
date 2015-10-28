@@ -35,7 +35,7 @@ theme_set(theme_bw(base_size = 18))
 ```
 
 ```{r echo=FALSE}
-#Define functions
+#sDefine functions
 
 plot_dataframe <- function(data, color_var=NULL, cols=NULL){
   if(missing(cols)){
@@ -412,7 +412,7 @@ with(df, tapply(len, list(dose), mean)) # means by group
 mean(df$len) #unweighted grand mean
 ```
 
-Here, our intercept is our (unweighted) "grand mean" of tooth length. Then, for our dose constrasts, C1 indicates the difference of "low" from the grand mean ($18.8133-8.2083=10.6$), and C2 indicates the difference of "high" from the grand mean ($18.8133+7.2867=26.1$). Thus, we can say that those with low doses (collapsing across the supplement) had significantly less tooth growth than average [**interpretation of effect!**], $b=-8.21, t(56)=-11.75, p < 0.001$ [**stats!**]. This might be because vitamin C promotes tooth growth [**causal story!**]. However, those with high doses had more tooth growth than average, $b=7.29, t(56)=10.43, p < 0.01$.
+Here, our intercept is our (unweighted) "grand mean" of tooth length (it's weighted if the cell counts are balanced). Then, for our dose constrasts, C1 indicates the difference of "low" from the grand mean ($18.8133-8.2083=10.6$), and C2 indicates the difference of "high" from the grand mean ($18.8133+7.2867=26.1$). Thus, we can say that those with low doses (collapsing across the supplement) had significantly less tooth growth than average [**interpretation of effect!**], $b=-8.21, t(56)=-11.75, p < 0.001$ [**stats!**]. This might be because vitamin C promotes tooth growth [**causal story!**]. However, those with high doses had more tooth growth than average, $b=7.29, t(56)=10.43, p < 0.01$.
 
 What would happen if you re-coded the contrasts so that the "low" group was $-1$ in both contrasts?
 
@@ -438,6 +438,9 @@ summary(aov(len ~ supp * dose, data=df))
 summary(res)
 ```
 
+Here, our doseOTHERvsLOW contrast shows us that the low dose group has significantly lower tooth growth than the other two groups, $b=4.10, t(54)=12.38, p < 0.01$. Further, the doseHIGHvsMED contrast shows us that the high dose group has more tooth growth than the medium group, $b=3.18, t(54)=5.54, p < 0.01.$
+
+
 Let's try to recreate our group means using the output!
 
 ```{r}
@@ -460,6 +463,11 @@ rbind(OJ = c(OJ_low, OJ_med, OJ_high), VC = c(VC_low, VC_med, VC_high))
 with(df, tapply(len, list(supp,dose), mean))
 ```
 
+Since the contrasts are orthogonal, our predictors aren't correlated!
+```{r}
+designmat = data.frame(model.matrix(res))
+cor(designmat)
+```
 
 
 ## Mediation (Question E)
