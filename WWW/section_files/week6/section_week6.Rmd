@@ -236,6 +236,7 @@ ggplot(d,
                   slope=at_plus1SD$coefficients[2]), colour='dodgerblue', size=2, alpha=.9) 
 ```
 
+
 Alternately, get the plot just using the original model:
 ```{r echo=FALSE, fig.width=5, fig.height=5, warning=FALSE}
 d$famprog_c = as.numeric(scale(d$famprog, scale=F))
@@ -440,7 +441,29 @@ mean(df$len) #unweighted grand mean
 
 Here, our intercept is our (unweighted) "grand mean" of tooth length (it's weighted if the cell counts are balanced). Then, for our dose constrasts, C1 indicates the difference of "low" from the grand mean ($18.8133-8.2083=10.6$), and C2 indicates the difference of "high" from the grand mean ($18.8133+7.2867=26.1$). Thus, we can say that those with low doses (collapsing across the supplement) had significantly less tooth growth than average [**interpretation of effect!**], $b=-8.21, t(56)=-11.75, p < 0.001$ [**stats!**]. This might be because vitamin C promotes tooth growth [**causal story!**]. However, those with high doses had more tooth growth than average, $b=7.29, t(56)=10.43, p < 0.01$.
 
-What would happen if you re-coded the contrasts so that the "low" group was $-1$ in both contrasts?
+
+Another way to look at the contrasts is as a weighted combination of the group means. Here, we have to take the inverse of R's contrast codes, and we get the weights for each group:
+```{r}
+tmp <- contrasts(df$dose)
+tmp <- cbind(constant=1,tmp) # add an intercept (1s)
+weights = solve(tmp); weights
+```
+
+**intercept estimate** = .333 * low + .333 * med + .333 * high
+
+**C1 estimate** = .666 * low + -.333 * med + -.333 * high = low - (low + med + high)/3
+
+**C2 estimate** = -.333 * low + -.333 * med + .666 * high = high - (low + med + high)/3
+
+```{r}
+means = with(df, tapply(len, list(dose), mean)) # means by group
+means
+
+sum(means * weights[1,]) # intercept
+sum(means * weights[2,]) # C1
+sum(means * weights[3,]) # C2
+```
+
 
 Now, let's turn to using **contrast coding** to test specific predictions! These should be decided *a priori*, and are thus often called "**planned comparisons**".
 
@@ -465,7 +488,6 @@ summary(res)
 ```
 
 Here, our doseOTHERvsLOW contrast shows us that the low dose group has significantly lower tooth growth than the other two groups, $b=4.10, t(54)=12.38, p < 0.01$. Further, the doseHIGHvsMED contrast shows us that the high dose group has more tooth growth than the medium group, $b=3.18, t(54)=5.54, p < 0.01.$
-
 
 Let's try to recreate our group means using the output!
 
@@ -496,6 +518,27 @@ designmat = data.frame(model.matrix(res))
 cor(designmat)
 ```
 
+
+Again, another way to look at the contrasts is as a weighted combination of the group means. Here, we have to take the inverse of R's contrast codes, and we get the weights for each group:
+```{r}
+tmp <- contrasts(df$dose)
+tmp <- cbind(constant=1,tmp) # add an intercept (1s)
+weights = solve(tmp); weights
+```
+
+**intercept estimate** = .333 * low + .333 * med + .333 * high
+
+**OTHERvsLOW estimate** = -.333 * low + 0.167 * med + 0.167 * high
+
+**HIGHvsMED estimate** = 0 * low + -.5 * med + .5 * high
+
+```{r}
+coef(res)
+
+sum(means * weights[1,]) # intercept
+sum(means * weights[2,]) # OTHERvsLOW
+sum(means * weights[3,]) # HIGHvsMED
+```
 
 ## Mediation (Question E)
 
