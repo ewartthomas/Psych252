@@ -15,6 +15,7 @@ output:
 * Use R when appropriate to save time, and given extra time write down what you can for credit if you make mistakes (e.g., the code you entered into R; the equations you'd use)
 * If you get stuck on a question, move on and come back to it later! 
 * It's better to write down something rather than leaving an answer blank. Even if you just write down the equations you would use (or the test more generally), rather than calculating everything.
+* If working on homeworks in groups, make sure fully understand each question; try each question on your own before consulting with other people so that you get practice generating how to solve a given problem!
 
 ## A note on interactions
 
@@ -210,7 +211,14 @@ $b = -.01, t(64)=-0.23, p=0.82$ Interpret this!
 
 For companies where few families use the family programs (i.e., a low percentage of employees have families), the number of programs does not affect employee satisfaction, `b = -.01, t(64) = -.23, p >.80.` However, for companies where a lot of families use the family programs (i.e., a high percentage of employees have families), the number of family programs is associated with higher employee satisfaction, `b = .14, t(64) = 2.70, p = .007.`
 
-We can also plot these specific results to visualize the interaction:
+
+#### Visualize the interaction/simple effects 
+
+We can also plot these specific results to visualize the continuous interaction (specifically the simple effects of famprog at +/- 1SD of perfam) using the regression equations from above.
+
+At the mean of perfam: $\hat{y} = 3.94 + 0.07\text{famprog}$
+At -1SD perfam: $\hat{y} = 4.12 - 0.12\text{famprog}$
+At +1SD perfam: $\hat{y} = 3.77 + 0.14\text{famprog}$
 
 ```{r fig.width=5, fig.height=5, warning=FALSE}
 ggplot(d, 
@@ -225,7 +233,25 @@ ggplot(d,
                   slope=at_minus1SD$coefficients[2]), colour='red', size=2, alpha=.9) +
   # effect of famprog on empsatis +1 SD perfam
   geom_abline(aes(intercept=at_plus1SD$coefficients[1], 
-                  slope=at_plus1SD$coefficients[2]), colour='dodgerblue', size=2, alpha=.9)
+                  slope=at_plus1SD$coefficients[2]), colour='dodgerblue', size=2, alpha=.9) 
+```
+
+Alternately, get the plot just using the original model:
+```{r echo=FALSE, fig.width=5, fig.height=5, warning=FALSE}
+d$famprog_c = as.numeric(scale(d$famprog, scale=F))
+d$perfam_c = as.numeric(scale(d$perfam, scale=F))
+modelv = lm(empsatis ~  perfam_c * famprog_c, data=d)
+summary(modelv)
+with(d, plot(famprog_c,empsatis,type="n")) # Plot without dots
+xv<-seq(-4,4,1)
+for(i in -1:1){
+lines(xv,predict(modelv,
+                 list(famprog_c=xv,
+                      perfam_c=rep(i*sd(d$perfam_c),
+                                     length(xv)))),
+      lty=2+i,col=10+i)
+}
+legend("topleft", title="self_image",c("1 SD below","At mean","1 SD above"), lty = 1:3,col=9:11, cex=1)
 ```
 
 ### Return to the main/simple effects
@@ -462,6 +488,7 @@ rbind(OJ = c(OJ_low, OJ_med, OJ_high), VC = c(VC_low, VC_med, VC_high))
 
 with(df, tapply(len, list(supp,dose), mean))
 ```
+
 
 Since the contrasts are orthogonal, our predictors aren't correlated!
 ```{r}
