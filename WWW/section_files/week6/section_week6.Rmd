@@ -162,6 +162,18 @@ ggplot(na.omit(d), aes(famprog, empsatis,
 
 When examining whether the percentage of employees with families impacts the effect of family programs on employee satisfaction, we observed a significant interaction between the number of family friendly programs and the percentage of employees with families on employee satisfaction, $b=0.007, t(64)=2.06, p < 0.05$. More specifically, for companies that had a low percentage of employees with families, an increase in the number of family friendly programs did not really affect employee satistfaction. However, for companies that had a high percentage of employees with families, the more family friendly programs they had, the higher employee satisfaction was. This is likely the case because employees with families could make better use of the family friendly programs, etc.
 
+#### Interpret the main/lower order effects
+```{r}
+# summary(lm(empsatis ~ scale(famprog, scale=FALSE) * scale(perfam, scale=FALSE), data = d))
+# summary(lm(empsatis ~ scale(famprog, scale=FALSE), data = d))
+# summary(lm(empsatis ~ scale(perfam, scale=FALSE), data = d))
+```
+
+Collapsing across the levels of percentage of employees with families, we observed a marginal main effect of the number of family programs on employee satisfaction, $b=0.07, t(66)=1.83, p=0.07$, such that as the number of family friendly programs increased, employee satisfaction marginally increased (note that this effect was qualified by an interaction, see above). Further, the same marginal increase in employee satisfaction due to family programs was observed at companies with the average percentage of employees with families (controlling for the percentage of employees with families),  $b=0.07, t(66)=1.83, p=0.07$. Perhaps family friendly programs offer helpful resources, and thus boost satisfaction.
+
+Additionally, for companies that have an average level of family friendly programs (controlling for the average level of family friendly programs), the percentage of employees with families marginally decreases employee satisfaction, $b=-0.17, t(64)=-1.87, p=0.06$. Perhaps with an average number of resources, these employees have additional stress induced by their families, and thereby have less satisfaction. 
+
+
 ### Further explore the interaction
 
 **Interpret the interaction by examining the effect of family programs on employee satisfaction for companies who have the average number of employees with families**
