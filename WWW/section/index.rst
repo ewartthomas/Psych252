@@ -174,3 +174,15 @@ HW 4, interactions, contrasts, mediation
 
 
 ----------------------------
+
+
+
+Week 7
+################
+
+Practice with lm
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Example scenarios and lm output; practice creating contrasts, interpreting contrasts, and interpreting lm output
+
+[`PDF <http://web.stanford.edu/class/psych252/section/Week7SectionPractice.pdf>`_]

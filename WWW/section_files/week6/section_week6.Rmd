@@ -378,10 +378,11 @@ levels(l$PerCat)
 contrasts(l$PerCat)
 
 # now let's change it
-contrasts(l$PerCat) = cbind(hiVSother = c(1,1,-2), lowVSmid = c(1,-1,0)) #which groups are these contrasts comparing?
+contrasts(l$PerCat) = cbind(lowVSother = c(2,-1,-1), midVShigh = c(0,1,-1)) #which groups are these contrasts comparing?
 contrasts(l$PerCat)
 
 with(l, summary(lm(empsatis ~ PerCat)))
+mean(l$empsatis)
 ```
 
 ### Interpreting our contrasts
