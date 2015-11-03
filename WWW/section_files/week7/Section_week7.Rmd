@@ -17,6 +17,12 @@ theme_set(theme_bw(base_size = 18))
 
 Remember that both the **Baron & Kenny method** and a test for **partial correlation** can test causal hypotheses. Let's compare a test with partial correlation to mediation!
 
+
+### Mediation analysis
+
+A researcher running a mediation analysis might think: **the effect of cups of coffee on performance** is **mediated by the hyperactivity** (indexed by the number of problems they solve), such that coffee increases the level of hyperactivity, and the increased hyperactivity increases performance. 
+
+
 **Causal Models**
 
 **IV**: *Coffee* - 20 subjects in each group either had 0 cups, 2 cups, or 4 cups
@@ -54,10 +60,6 @@ plotmat(M, pos = c(1, 2), curve = 0, name = names, lwd = 1,
 What's the model we don't need?
 
 *Mediator predicting our DV on its own -- lm(y~z)*
-
-### Mediation analysis
-
-A researcher running this analysis might think: **the effect of cups of coffee on performance** is **mediated by the hyperactivity** (indexed by the number of problems they solve), such that coffee increases the level of hyperactivity, and the increased hyperactivity increases performance. 
 
 #### lm(y ~ x) 
 ```{r}
