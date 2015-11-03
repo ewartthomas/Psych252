@@ -134,9 +134,9 @@ $$\textrm{Partial Correlation }: r(xy.z) = \frac{{r_{xy} - r_{xz} * r_{yz}}}{\sq
 
 ```{r partial correlation}
 n <- 60
-xy<- as.numeric(a$estimate)
-xz<- as.numeric(b$estimate)
-yz<- as.numeric(c$estimate)
+xy<- as.numeric(a$estimate); xy
+xz<- as.numeric(b$estimate); xz
+yz<- as.numeric(c$estimate); yz
 
 r_xy_z<-(xy-(xz*yz))/(sqrt((1-xz^2)*(1-yz^2))); print(r_xy_z)
 t2 <- r_xy_z*sqrt((n-2)/(1-r_xy_z^2)); print(t2)
@@ -161,6 +161,7 @@ partial.r(da, 1:2, 3)
 
 #### Interpret the results!
 
+Since the partial correlation of coffee on performance (controlling for hyperactivity) is not significantly greater than zero, r(58) = 0.05, t(58) = 0.37, p > 0.1, hyperactivity may be a mediating variable -- we should then run a mediation test, described above! 
 
 
 #### Another way of framing a partial correlation question
@@ -196,3 +197,5 @@ ptr<-pt(t2,n-2, lower.tail=FALSE); print(ptr)
 ```
 
 #### Interpret
+
+Here, since the partial correlation of hyperactivity on performance, when partialling out cups of coffee, is significantly greater than zero, r(58)=0.27, t(58)=2.14, p = 0.02, this suggests that there is some relationship between hyperactivity and performance that isn't explained by coffee, and therefore, that the model above does not appropriately capture the relationships between the variables.
