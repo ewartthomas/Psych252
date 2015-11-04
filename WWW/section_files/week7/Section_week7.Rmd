@@ -86,6 +86,7 @@ se_b_val = summary(model3)$coefficients[3,2]
 # c_val - a_val * b_val
 ```
 
+
 #### Sobel test 
 ```{r}
 se_ab <- sqrt(b_val^2*
@@ -139,8 +140,14 @@ xz<- as.numeric(b$estimate); xz
 yz<- as.numeric(c$estimate); yz
 
 r_xy_z<-(xy-(xz*yz))/(sqrt((1-xz^2)*(1-yz^2))); print(r_xy_z)
+
 t2 <- r_xy_z*sqrt((n-2)/(1-r_xy_z^2)); print(t2)
-ptr<-pt(t2,n-2, lower.tail=FALSE); print(ptr) 
+ptr<-2*pt(t2,n-2, lower.tail=FALSE); print(ptr) 
+
+
+# install.packages('ppcor')
+library(ppcor)
+print(pcor.test(d$cups, d$perf, d$numprob))
 ```
 
 
@@ -192,8 +199,11 @@ xz<- 0.7295802
 yz<- 0.3354014
 
 r_xy_z<-(xy-(xz*yz))/(sqrt((1-xz^2)*(1-yz^2))); print(r_xy_z)
+
 t2 <- r_xy_z*sqrt((n-2)/(1-r_xy_z^2)); print(t2)
-ptr<-pt(t2,n-2, lower.tail=FALSE); print(ptr) 
+ptr<-2*pt(t2,n-2, lower.tail=FALSE); print(ptr) 
+
+print(pcor.test(d$numprob, d$perf, d$cups))
 ```
 
 #### Interpret

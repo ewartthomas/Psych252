@@ -208,8 +208,13 @@ xy&lt;-<span class="st"> </span><span class="kw">as.numeric</span>(a$estimate); 
 <pre><code>## [1] 0.04826</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">t2 &lt;-<span class="st"> </span>r_xy_z*<span class="kw">sqrt</span>((n<span class="dv">-2</span>)/(<span class="dv">1</span>-r_xy_z^<span class="dv">2</span>)); <span class="kw">print</span>(t2)</code></pre>
 <pre><code>## [1] 0.368</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">ptr&lt;-<span class="kw">pt</span>(t2,n<span class="dv">-2</span>, <span class="dt">lower.tail=</span><span class="ot">FALSE</span>); <span class="kw">print</span>(ptr) </code></pre>
-<pre><code>## [1] 0.3571</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">ptr&lt;-<span class="dv">2</span>*<span class="kw">pt</span>(t2,n<span class="dv">-2</span>, <span class="dt">lower.tail=</span><span class="ot">FALSE</span>); <span class="kw">print</span>(ptr) </code></pre>
+<pre><code>## [1] 0.7142</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># install.packages('ppcor')</span>
+<span class="kw">library</span>(ppcor)
+<span class="kw">print</span>(<span class="kw">pcor.test</span>(d$cups, d$perf, d$numprob))</code></pre>
+<pre><code>##   estimate p.value statistic  n gp  Method
+## 1  0.04826  0.7153    0.3648 60  1 pearson</code></pre>
 <p>Let’s do this using <code>library(psych)</code></p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(psych)</code></pre>
 <pre><code>## 
@@ -260,8 +265,11 @@ r_xy_z&lt;-(xy-(xz*yz))/(<span class="kw">sqrt</span>((<span class="dv">1</span>
 <pre><code>## [1] 0.27</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">t2 &lt;-<span class="st"> </span>r_xy_z*<span class="kw">sqrt</span>((n<span class="dv">-2</span>)/(<span class="dv">1</span>-r_xy_z^<span class="dv">2</span>)); <span class="kw">print</span>(t2)</code></pre>
 <pre><code>## [1] 2.135</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">ptr&lt;-<span class="kw">pt</span>(t2,n<span class="dv">-2</span>, <span class="dt">lower.tail=</span><span class="ot">FALSE</span>); <span class="kw">print</span>(ptr) </code></pre>
-<pre><code>## [1] 0.01849</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">ptr&lt;-<span class="dv">2</span>*<span class="kw">pt</span>(t2,n<span class="dv">-2</span>, <span class="dt">lower.tail=</span><span class="ot">FALSE</span>); <span class="kw">print</span>(ptr) </code></pre>
+<pre><code>## [1] 0.03698</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">print</span>(<span class="kw">pcor.test</span>(d$numprob, d$perf, d$cups))</code></pre>
+<pre><code>##   estimate p.value statistic  n gp  Method
+## 1     0.27 0.03428     2.117 60  1 pearson</code></pre>
 </div>
 <div id="interpret" class="section level4">
 <h4>Interpret</h4>
