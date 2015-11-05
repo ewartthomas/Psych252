@@ -210,8 +210,8 @@ xy&lt;-<span class="st"> </span><span class="kw">as.numeric</span>(a$estimate); 
 <pre><code>## [1] 0.0483</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="dv">2</span>*<span class="kw">pnorm</span>(<span class="dt">q =</span> z_fisher, <span class="dt">mean =</span> <span class="dv">0</span>, <span class="dt">sd=</span><span class="kw">sqrt</span>(<span class="dv">1</span>/(n<span class="dv">-1-3</span>)), <span class="dt">lower.tail=</span>F)</code></pre>
 <pre><code>## [1] 0.7178</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># t2 &lt;- r_xy_z*sqrt((n-2)/(1-r_xy_z^2)); print(t2)</span>
-<span class="co"># ptr&lt;-2*pt(t2,n-2, lower.tail=FALSE); print(ptr) </span>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># t2 &lt;- r_xy_z*sqrt((n-3)/(1-r_xy_z^2)); print(t2)</span>
+<span class="co"># ptr&lt;-2*pt(t2,n-3, lower.tail=FALSE); print(ptr) </span>
 
 <span class="co"># install.packages('ppcor')</span>
 <span class="kw">library</span>(ppcor)
@@ -266,8 +266,9 @@ yz&lt;-<span class="st"> </span><span class="fl">0.3354014</span>
 
 r_xy_z&lt;-(xy-(xz*yz))/(<span class="kw">sqrt</span>((<span class="dv">1</span>-xz^<span class="dv">2</span>)*(<span class="dv">1</span>-yz^<span class="dv">2</span>))); <span class="kw">print</span>(r_xy_z)</code></pre>
 <pre><code>## [1] 0.27</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># t2 &lt;- r_xy_z*sqrt((n-2)/(1-r_xy_z^2)); print(t2)</span>
-<span class="co"># ptr&lt;-2*pt(t2,n-2, lower.tail=FALSE); print(ptr) </span>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># t2 &lt;- sqrt(((n-3)*r_xy_z^2)/(1-r_xy_z^2)); print(t2)</span>
+<span class="co"># t2 &lt;- r_xy_z * sqrt(((n-3))/(1-r_xy_z^2)); print(t2)</span>
+<span class="co"># ptr&lt;-2*pt(t2,n-3, lower.tail=FALSE); print(ptr) </span>
 
 <span class="kw">print</span>(<span class="kw">pcor.test</span>(d$numprob, d$perf, d$cups))</code></pre>
 <pre><code>##   estimate p.value statistic  n gp  Method

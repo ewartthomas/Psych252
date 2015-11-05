@@ -144,8 +144,8 @@ r_xy_z<-(xy-(xz*yz))/(sqrt((1-xz^2)*(1-yz^2))); print(r_xy_z)
 z_fisher = 0.5*log((1+r_xy_z)/(1-r_xy_z)); z_fisher
 2*pnorm(q = z_fisher, mean = 0, sd=sqrt(1/(n-1-3)), lower.tail=F)
 
-# t2 <- r_xy_z*sqrt((n-2)/(1-r_xy_z^2)); print(t2)
-# ptr<-2*pt(t2,n-2, lower.tail=FALSE); print(ptr) 
+# t2 <- r_xy_z*sqrt((n-3)/(1-r_xy_z^2)); print(t2)
+# ptr<-2*pt(t2,n-3, lower.tail=FALSE); print(ptr) 
 
 # install.packages('ppcor')
 library(ppcor)
@@ -202,8 +202,9 @@ yz<- 0.3354014
 
 r_xy_z<-(xy-(xz*yz))/(sqrt((1-xz^2)*(1-yz^2))); print(r_xy_z)
 
-# t2 <- r_xy_z*sqrt((n-2)/(1-r_xy_z^2)); print(t2)
-# ptr<-2*pt(t2,n-2, lower.tail=FALSE); print(ptr) 
+# t2 <- sqrt(((n-3)*r_xy_z^2)/(1-r_xy_z^2)); print(t2)
+# t2 <- r_xy_z * sqrt(((n-3))/(1-r_xy_z^2)); print(t2)
+# ptr<-2*pt(t2,n-3, lower.tail=FALSE); print(ptr) 
 
 print(pcor.test(d$numprob, d$perf, d$cups))
 
