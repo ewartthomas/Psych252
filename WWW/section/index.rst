@@ -195,6 +195,7 @@ Walk through mediation and partial correlations using the caffeine dataset.
 [`html <http://web.stanford.edu/class/psych252/section/Section_week7.html>`_]
 [`Rmd <http://web.stanford.edu/class/psych252/sectionSection_week7.Rmd>`_]
 
+----------------------------
 
 Week 8
 ################
@@ -207,3 +208,5 @@ significance of models, model comparison, ML vs. REML estimation, and item effec
 
 [`html <http://web.stanford.edu/class/psych252/section/Mixed_models_tutorial.html>`_]
 [`Rmd <http://web.stanford.edu/class/psych252/Mixed_models_tutorial.Rmd>`_]
+
+----------------------------
