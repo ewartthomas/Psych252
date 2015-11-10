@@ -381,7 +381,7 @@ deviance +<span class="st"> </span><span class="dv">2</span>*(p<span class="dv">
 ##      Df AIC BIC logLik deviance Chisq Chi Df Pr(&gt;Chisq)
 ## res2  5 800 812   -395      790                        
 ## res3  7 803 820   -395      789  0.02      2       0.99</code></pre>
-<p>It looks like they’re <em>not</em> warranted in this case. Adding random slopes for each subject takes up 2 more degrees of freedom, and <strong>doesn’t significantly improve model fit</strong>, <span class="math">\(\chi^2 (2) = 0.024, p = 0.99\)</span>. Looking at the AIC values, AIC is higher for the more complex model, so we want to go with the less complex (more parsimonious) model. If we look at the estimated slopes, we can see they’re pretty similar across subjects! So, it appears that we don’t need to include random slope for condition in the model;</p>
+<p>It looks like they’re <em>not</em> warranted in this case. Adding random slopes for each subject takes up 2 more degrees of freedom, and <strong>doesn’t significantly improve model fit</strong>, <span class="math">\(\chi^2 (2) = 0.024, p = 0.99\)</span>. Note that the df=2 because we’re adding both a slope variance and a correlation between intercept and slope. Looking at the AIC values, AIC is higher for the more complex model, so we want to go with the less complex (more parsimonious) model. If we look at the estimated slopes, we can see they’re pretty similar across subjects! So, it appears that we don’t need to include random slope for condition in the model;</p>
 <p>However, others would argue that we should <strong>keep our models maximal</strong> and should include the random slopes even if they don’t improve the model! To read more about this debate, check out this paper <a href="http://idiom.ucsd.edu/~rlevy/papers/barr-etal-2013-jml.pdf">Barr, Levy, Scheepers, &amp; Tilly, 2013</a>.</p>
 </div>
 <div id="testing-signifiance" class="section level2">
@@ -453,7 +453,7 @@ res3b =<span class="st"> </span><span class="kw">lmer</span>(pitch ~<span class=
 </div>
 <div id="model-comparison" class="section level3">
 <h3>Model comparison</h3>
-<p>On the other hand, some argue that model comparison is a better way of testing whether a parameter is signifiant. That is, if adding the parameter to your model significantly improves model fit, then that parameter should be included in the model.</p>
+<p>On the other hand, some argue that model comparison with likelihood ratio tests is a better way of testing whether a parameter is signifiant. That is, if adding the parameter to your model significantly improves model fit, then that parameter should be included in the model.</p>
 <pre class="sourceCode r"><code class="sourceCode r">res4 =<span class="st"> </span><span class="kw">lmer</span>(pitch ~<span class="st"> </span>gender +<span class="st"> </span>(<span class="dv">1</span> |<span class="st"> </span>subject), <span class="dt">REML =</span> <span class="ot">FALSE</span>, <span class="dt">data =</span> d)
 res4b =<span class="st"> </span><span class="kw">lmer</span>(pitch ~<span class="st"> </span>condition +<span class="st"> </span>gender +<span class="st"> </span>(<span class="dv">1</span> |<span class="st"> </span>subject), <span class="dt">REML =</span> <span class="ot">FALSE</span>, <span class="dt">data =</span> d)
 <span class="kw">anova</span>(res4, res4b)</code></pre>
@@ -494,6 +494,38 @@ devdiff &lt;-<span class="st"> </span><span class="kw">as.numeric</span>(dev0-de
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cat</span>(<span class="st">'Chi-square ='</span>, devdiff, <span class="st">'(df='</span>, dfdiff,<span class="st">'), p ='</span>, 
   <span class="kw">pchisq</span>(devdiff,dfdiff,<span class="dt">lower.tail=</span><span class="ot">FALSE</span>))</code></pre>
 <pre><code>## Chi-square = 19.51 (df= 1 ), p = 9.996e-06</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Compare AICs</span>
+<span class="kw">AIC</span>(res5b, res5)</code></pre>
+<pre><code>##       df   AIC
+## res5b  4 833.8
+## res5   5 816.3</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co">#install.packages('bblme')</span>
+bbmle::<span class="kw">AICtab</span>(res5b, res5) <span class="co"># delta (difference) AIC</span></code></pre>
+<pre><code>##       dAIC df
+## res5   0.0 5 
+## res5b 17.5 4</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Compare lm with nlme model to use same log likelihood</span>
+<span class="kw">library</span>(nlme)</code></pre>
+<pre><code>## 
+## Attaching package: 'nlme'
+## 
+## The following object is masked from 'package:dplyr':
+## 
+##     collapse
+## 
+## The following object is masked from 'package:lme4':
+## 
+##     lmList</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">res5c =<span class="st"> </span><span class="kw">lme</span>(pitch ~<span class="st"> </span>condition +<span class="st"> </span>gender, <span class="dt">random=</span>~<span class="dv">1</span>|subject, <span class="dt">data =</span> <span class="kw">na.omit</span>(d))
+<span class="kw">anova</span>(res5c, res5b) <span class="co"># need to put nlme model first</span></code></pre>
+<pre><code>##       Model df   AIC   BIC logLik   Test L.Ratio p-value
+## res5c     1  5 799.5 811.4 -394.8                       
+## res5b     2  4 820.2 829.7 -406.1 1 vs 2   22.68  &lt;.0001</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">logLik</span>(res5c)</code></pre>
+<pre><code>## 'log Lik.' -394.8 (df=5)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">logLik</span>(res5)</code></pre>
+<pre><code>## 'log Lik.' -403.2 (df=5)</code></pre>
+<p>Here, the <span class="math">\(\chi^2\)</span> distribution isn’t always a good approximation of the null distribution, so keep that in mind. You can use a parametric bootstrap to get a better p-value, but we won’t cover that here.</p>
 </div>
 </div>
 <div id="item-effects" class="section level2">

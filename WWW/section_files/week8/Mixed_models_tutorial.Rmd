@@ -208,7 +208,7 @@ coef(res3)
 anova(res2, res3, refit=FALSE)
 ```
 
-It looks like they're *not* warranted in this case. Adding random slopes for each subject takes up 2 more degrees of freedom, and **doesn't significantly improve model fit**, $\chi^2 (2) = 0.024, p = 0.99$. Looking at the AIC values, AIC is higher for the more complex model, so we want to go with the less complex (more parsimonious) model. If we look at the estimated slopes, we can see they're pretty similar across subjects! So, it appears that we don't need to include random slope for condition in the model; 
+It looks like they're *not* warranted in this case. Adding random slopes for each subject takes up 2 more degrees of freedom, and **doesn't significantly improve model fit**, $\chi^2 (2) = 0.024, p = 0.99$. Note that the df=2 because we're adding both a slope variance and a correlation between intercept and slope. Looking at the AIC values, AIC is higher for the more complex model, so we want to go with the less complex (more parsimonious) model. If we look at the estimated slopes, we can see they're pretty similar across subjects! So, it appears that we don't need to include random slope for condition in the model; 
 
 However, others would argue that we should **keep our models maximal** and should include the random slopes even if they don't improve the model! To read more about this debate, check out this paper [Barr, Levy, Scheepers, & Tilly, 2013](http://idiom.ucsd.edu/~rlevy/papers/barr-etal-2013-jml.pdf).
 
@@ -233,10 +233,9 @@ anova(res2, refit=FALSE)
 anova(res2b, ddf="Kenward-Roger", refit=FALSE)
 ```
 
-
 ### Model comparison
 
-On the other hand, some argue that model comparison is a better way of testing whether a parameter is signifiant. That is, if adding the parameter to your model significantly improves model fit, then that parameter should be included in the model.
+On the other hand, some argue that model comparison with likelihood ratio tests is a better way of testing whether a parameter is signifiant. That is, if adding the parameter to your model significantly improves model fit, then that parameter should be included in the model.
 
 ```{r}
 res4 = lmer(pitch ~ gender + (1 | subject), REML = FALSE, data = d)
@@ -270,8 +269,22 @@ devdiff <- as.numeric(dev0-dev1); devdiff
 dfdiff <- attr(dev1,"df")-attr(dev0,"df"); dfdiff
 cat('Chi-square =', devdiff, '(df=', dfdiff,'), p =', 
   pchisq(devdiff,dfdiff,lower.tail=FALSE))
+
+# Compare AICs
+AIC(res5b, res5)
+#install.packages('bblme')
+bbmle::AICtab(res5b, res5) # delta (difference) AIC
+
+# Compare lm with nlme model to use same log likelihood
+library(nlme)
+res5c = lme(pitch ~ condition + gender, random=~1|subject, data = na.omit(d))
+anova(res5c, res5b) # need to put nlme model first
+
+logLik(res5c)
+logLik(res5)
 ```
 
+Here, the $\chi^2$ distribution isn't always a good approximation of the null distribution, so keep that in mind. You can use a parametric bootstrap to get a better p-value, but we won't cover that here.
 
 ## Item effects
 Now, different stimuli may elicit different values of “pitch”; as a result, pitch for a given scenario may be correlated across subjects, and even within a subject for the polite and informal conditions. We can model this as a random effect!
