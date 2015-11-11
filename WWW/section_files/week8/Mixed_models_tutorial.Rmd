@@ -247,7 +247,13 @@ anova(res2b, ddf="Kenward-Roger", refit=FALSE)
 
 ### Model comparison
 
-On the other hand, some argue that model comparison with likelihood ratio tests is a better way of testing whether a parameter is signifiant. That is, if adding the parameter to your model significantly improves model fit, then that parameter should be included in the model. 
+On the other hand, some argue that model comparison with **likelihood ratio tests** is a better way of testing whether a parameter is significant. That is, if adding the parameter to your model significantly improves model fit, then that parameter should be included in the model. 
+
+The likelihood ratio test essentially tells us how much more likely the data is under a more complex model than under the simpler model (these models need to be nested!):
+
+$$D = -2*ln(\frac{\text{likelihood for simple model}}{\text{likelihood for complex model}}) = -2*ln(\text{likelihood for simple model}) + 2*ln(\text{likelihood for complex model})$$
+
+The distribution of D is approximately $\chi^2$ with df2-df1 degrees of freedom. We either do this computation "by hand", or just use the `anova()` function!
 
 ```{r}
 res4 = lmer(pitch ~ gender + (1 | subject), REML = FALSE, data = d)

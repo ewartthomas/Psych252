@@ -458,7 +458,10 @@ res3b =<span class="st"> </span><span class="kw">lmer</span>(pitch ~<span class=
 </div>
 <div id="model-comparison" class="section level3">
 <h3>Model comparison</h3>
-<p>On the other hand, some argue that model comparison with likelihood ratio tests is a better way of testing whether a parameter is signifiant. That is, if adding the parameter to your model significantly improves model fit, then that parameter should be included in the model.</p>
+<p>On the other hand, some argue that model comparison with <strong>likelihood ratio tests</strong> is a better way of testing whether a parameter is significant. That is, if adding the parameter to your model significantly improves model fit, then that parameter should be included in the model.</p>
+<p>The likelihood ratio test essentially tells us how much more likely the data is under a more complex model than under the simpler model (these models need to be nested!):</p>
+<p><span class="math">\[D = -2*ln(\frac{\text{likelihood for simple model}}{\text{likelihood for complex model}}) = -2*ln(\text{likelihood for simple model}) + 2*ln(\text{likelihood for complex model})\]</span></p>
+<p>The distribution of D is approximately <span class="math">\(\chi^2\)</span> with df2-df1 degrees of freedom. We either do this computation “by hand”, or just use the <code>anova()</code> function!</p>
 <pre class="sourceCode r"><code class="sourceCode r">res4 =<span class="st"> </span><span class="kw">lmer</span>(pitch ~<span class="st"> </span>gender +<span class="st"> </span>(<span class="dv">1</span> |<span class="st"> </span>subject), <span class="dt">REML =</span> <span class="ot">FALSE</span>, <span class="dt">data =</span> d)
 res4b =<span class="st"> </span><span class="kw">lmer</span>(pitch ~<span class="st"> </span>condition +<span class="st"> </span>gender +<span class="st"> </span>(<span class="dv">1</span> |<span class="st"> </span>subject), <span class="dt">REML =</span> <span class="ot">FALSE</span>, <span class="dt">data =</span> d)
 <span class="kw">anova</span>(res4, res4b)</code></pre>
