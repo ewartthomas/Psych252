@@ -103,6 +103,9 @@ Now with `lmer() {lme4}`, we can estimate the means for each participant. To do 
 library(lme4)
 res1 = lmer(pitch ~ (1 | subject), data = d)
 coef(res1)$subject[1]
+
+# fixed effect + random effect by subject
+# fixef(res1)['(Intercept)'] + ranef(res1)$subject
 ```
 Note that the estimates are pretty close to the actual mean pitches!
 

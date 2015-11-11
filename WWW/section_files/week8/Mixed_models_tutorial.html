@@ -193,6 +193,8 @@ pitch_bysubj</code></pre>
 ## M3       169.4
 ## M4       146.8
 ## M7       103.7</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># fixed effect + random effect by subject</span>
+<span class="co"># fixef(res1)['(Intercept)'] + ranef(res1)$subject</span></code></pre>
 <p>Note that the estimates are pretty close to the actual mean pitches!</p>
 <p>We can see that the actual mean pitch across subjects is the estimated <code>(Intercept)</code>, and the standard deviation across the subjects’ mean pitch is the standard deviation (<code>Std.Dev.</code>) of the random effects!</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Using the raw data</span>
