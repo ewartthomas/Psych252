@@ -25,7 +25,7 @@ Let's say you're interested in language, and more specifically how **voice pitch
 
 In a linear model as we've seen so far, we would model this as:
 
-$$\text{pitch} ~ \text{politeness} + \text{sex} + \epsilon$$
+$$\text{pitch} = \text{politeness} + \text{sex} + \epsilon$$
 
 Where the last term is our error term. This error term represents the deviations from our predictions due to “random” factors that we cannot control experimentally.
 
@@ -82,11 +82,11 @@ We can model these individual differences by assuming different **random interce
 
 Turning back to our model, our old formula was:
 
-$$\text{pitch} ~ \text{politeness} + \text{sex} + \epsilon$$
+$$\text{pitch} = \text{int} + \text{politeness} + \text{sex} + \epsilon$$
 
 Our updated formula looks like this: 
 
-$$\text{pitch} ~ \text{politeness} + \text{sex} + (1 | \text{subject}) \epsilon$$
+$$\text{pitch} = \text{int} + \text{politeness} + \text{sex} + (1 | \text{subject}) + \epsilon$$
 
 "`(1|subject)`" is the R syntax for a *random intercept*. What this is saying is "assume an intercept that’s different for each subject"" … and "1" stands for the intercept here. You can think of this formula as telling your model that it should expect that there’s going to be multiple responses per subject, and these responses will depend on each subject’s baseline level. This effectively resolves the non-independence that stems from having multiple responses by the same subject.
 
@@ -121,9 +121,14 @@ summary(res1)
 ```
 
 ## Including fixed effects
-Since we predicted that the condition of the hypothetical scenario ("informal" vs. "polite") would affect pitch (maybe the pitch will be higher in informal scenarios), in addition to gender of the subjects (pitch will probably be higher for females), let's include a model with these terms, while also taking into account the random intercepts for each subject.
+Since we predicted that the condition of the hypothetical scenario ("informal" vs. "polite") would affect pitch (maybe the pitch will be higher in informal scenarios), in addition to gender of the subjects (pitch will probably be higher for females), let's include a model with these terms, while also taking into account the random intercepts for each subject (letting the intercept vary by subject).
 
-$$\text{pitch} = \text{intercept_bysubject} + \text{condition} + \text{gender}$$
+$$\text{lmer(pitch ~} \text{politeness} + \text{sex} + (1 | \text{subject))}$$
+
+$$\text{pitch} = \text{intercept} + \text{condition} + \text{gender} + \text{subject intercept }\sigma^2$$
+
+$$\text{pitch for subject A} = \text{intercept} + \text{subject A's intercept shift} + \text{condition} + \text{gender}$$
+
 
 ```{r fig.width=6, fig.height=4}
 library(dplyr)
@@ -152,6 +157,9 @@ Here, we can see that our mean pitch is 192.88, pitch is lower higher for inform
 #### More model information
 
 We can assess the models with many different types of information. When **comparing models** this info can be useful! One useful measure is the **AIC**, which is $deviance + 2*(p+1)$, where $p$ is the number of parameters in the model. Lower AICs are better, since higher deviances mean that the model is not fitting the data well. Since AIC increases as $p$ increases, AIC is penalized for more parameters.
+
+$$\text{deviance} = -2*\text{log likelihood}$$
+$$\text{AIC} = \text{deviance} + 2*(p + 1)$$
 
 ```{r}
 logLikelihood = logLik(res2)
@@ -185,6 +193,10 @@ Again, not bad!
 ## Random slopes
 
 In the models above, we assumed that the effect of politeness was the same for all subjects, and thus had one coefficient for politeness. However, the effect of politeness might be different for different subjects; that is, there might be a **politeness : subject interaction**. For example, it might be expected that some people are more polite in polite scenarios, others less. So, what we need is a random slope model, where subjects and items are not only allowed to have differing intercepts, but where they are also allowed to have different slopes for the effect of politeness (i.e., different effects of condition on pitch).
+
+$$\text{lmer(pitch ~} \text{condition} + \text{gender} + \text{(1 + condition | subject))}$$
+
+$$\text{pitch for subject A} = \text{intercept} + \text{subject A's intercept shift} + \text{condition} + \text{subject A's condition slope shift}+ \text{gender}$$
 
 Let's start be visualizing the data:
 ```{r fig.width=6,  fig.height=4, echo=FALSE}
@@ -235,17 +247,27 @@ anova(res2b, ddf="Kenward-Roger", refit=FALSE)
 
 ### Model comparison
 
-On the other hand, some argue that model comparison with likelihood ratio tests is a better way of testing whether a parameter is signifiant. That is, if adding the parameter to your model significantly improves model fit, then that parameter should be included in the model.
+On the other hand, some argue that model comparison with likelihood ratio tests is a better way of testing whether a parameter is signifiant. That is, if adding the parameter to your model significantly improves model fit, then that parameter should be included in the model. 
 
 ```{r}
 res4 = lmer(pitch ~ gender + (1 | subject), REML = FALSE, data = d)
 res4b = lmer(pitch ~ condition + gender + (1 | subject), REML = FALSE, data = d)
 anova(res4, res4b)
+
+# doing this by hand:
+dev1 <- -2*logLik(res4b) # deviance complex model
+dev0 <- -2*logLik(res4) # deviance simpler model
+devdiff <- as.numeric(dev0-dev1) # difference in deviances
+dfdiff <- attr(dev1,"df")-attr(dev0,"df") # difference in params (using dfs)
+cat('Chi-square =', devdiff, '(df=', dfdiff,'), p =', 
+  pchisq(devdiff,dfdiff,lower.tail=FALSE))
 ```
 
 Here, we compared two nested models, one without `condition` and the other with `condition`. Using model comparison we conclude that inclusion of condition is warranted in our model since it significantly improves model fit, $\chi^2(1)=8.79, p < 0.01$. 
 
 ## REML vs. ML
+Check out the [cheatsheet here](http://www.stanford.edu/class/psych252/tutorials/model_comparisons.png) for when to use different types of metrics!
+
 Adapted from HW5: 
 
 Let us start with a statistical model that specifies (i) the fixed effects and (ii) the variances and covariances of the Normal distributions of the various random effects.
@@ -258,7 +280,7 @@ Let us start with a statistical model that specifies (i) the fixed effects and (
 
 Testing whether random effects are warranted
 ```{r}
-res5 = lmer(pitch ~ condition + gender + (1 | subject), REML = FALSE, data = d)
+res5 = lmer(pitch ~ condition + gender + (1 | subject), REML = FALSE, data = na.omit(d))
 res5b = lm(pitch ~ condition + gender, data = d)
 
 # anova(res5b, res5) # doesn't work!
@@ -275,16 +297,13 @@ AIC(res5b, res5)
 #install.packages('bblme')
 bbmle::AICtab(res5b, res5) # delta (difference) AIC
 
-# Compare lm with nlme model to use same log likelihood
+# Compare lm with nlme model directly with anova
 library(nlme)
-res5c = lme(pitch ~ condition + gender, random=~1|subject, data = na.omit(d))
+res5c = lme(pitch ~ condition + gender, random=~1|subject, method = 'ML', data = na.omit(d))
 anova(res5c, res5b) # need to put nlme model first
-
-logLik(res5c)
-logLik(res5)
 ```
 
-Here, the $\chi^2$ distribution isn't always a good approximation of the null distribution, so keep that in mind. You can use a parametric bootstrap to get a better p-value, but we won't cover that here.
+Here, the $\chi^2$ distribution isn't always a good approximation of the null distribution (too conservative when testing some random effects, and not conservative enough when testing some fixed effects), so keep that in mind. You can use a parametric bootstrap to get a better p-value, but we won't cover that here. Check out these [lecture notes](http://www.stat.wisc.edu/~ane/st572/notes/lec21.pdf) for some more info.
 
 ## Item effects
 Now, different stimuli may elicit different values of “pitch”; as a result, pitch for a given scenario may be correlated across subjects, and even within a subject for the polite and informal conditions. We can model this as a random effect!
