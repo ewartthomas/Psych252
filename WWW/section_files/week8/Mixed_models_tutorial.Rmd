@@ -102,6 +102,7 @@ Now with `lmer() {lme4}`, we can estimate the means for each participant. To do 
 ```{r}
 library(lme4)
 res1 = lmer(pitch ~ (1 | subject), data = d)
+# summary(res1)
 coef(res1)$subject[1]
 
 # fixed effect + random effect by subject
@@ -128,7 +129,7 @@ Since we predicted that the condition of the hypothetical scenario ("informal" v
 
 $$\text{lmer(pitch ~} \text{politeness} + \text{sex} + (1 | \text{subject))}$$
 
-$$\text{pitch} = \text{intercept} + \text{condition} + \text{gender} + \text{subject intercept }\sigma^2$$
+$$\text{pitch}_j = \text{intercept} +  \text{intercept}_j  + \text{condition} + \text{gender}$$
 
 $$\text{pitch for subject A} = \text{intercept} + \text{subject A's intercept shift} + \text{condition} + \text{gender}$$
 
@@ -176,6 +177,15 @@ AIC(res2)
 ```
 
 #### Extracting all the coefficients
+```{r fig.width=8, fig.height=2.5}
+d_bysubj = na.omit(d) %>%
+  group_by(subject) %>%
+  summarise(mean_pitch = mean(pitch))
+
+ggplot(d_bysubj, aes(x=factor(subject), y=mean_pitch)) +
+  geom_point(size=4, aes(colour = factor(subject)))
+```
+
 ```{r}
 coef(res2)
 ```
@@ -183,6 +193,7 @@ coef(res2)
 Here, we can see that this model yields a **separate intercept for each subject**, in addition to a parameter estimate/slope for condition and gender that is **constant across subjects**. From here, we could try to estimate a given subject's mean pitch based on these coefficients! For instance, let's try to estimate subject F1's mean ($\bar{x}$ =`232.0357`) using their estimated intercept, and the effect of being a female:
 ```{r}
 179.3003 + 0*(9.7) + 1*(54.10244)
+# pitch_bysubj
 ```
 Pretty close!
 
@@ -222,6 +233,7 @@ coef(res3)
 
 anova(res2, res3, refit=FALSE)
 ```
+
 
 It looks like they're *not* warranted in this case. Adding random slopes for each subject takes up 2 more degrees of freedom, and **doesn't significantly improve model fit**, $\chi^2 (2) = 0.024, p = 0.99$. Note that the df=2 because we're adding both a slope variance and a correlation between intercept and slope. Looking at the AIC values, AIC is higher for the more complex model, so we want to go with the less complex (more parsimonious) model. If we look at the estimated slopes, we can see they're pretty similar across subjects! So, it appears that we don't need to include random slope for condition in the model; 
 
@@ -281,7 +293,7 @@ Adapted from HW5:
 
 Let us start with a statistical model that specifies (i) the fixed effects and (ii) the variances and covariances of the Normal distributions of the various random effects.
 
-- In **ML** (Maximum Likelihood) estimation, we calculate the log(likelihood) (LL) of the data for an arbitrary choice of parameter values in sets (i) and (ii) above. We then search for the parameter values that maximize LL (or minimize –LL). These optimal parameter values are called the ML parameter estimates. The maximum value of LL (times -2) is called the deviance of the model. For some purposes, such as, describing the data, we focus on the ML parameter estimates; for other purposes, such as, model comparison, we focus on the deviance. The behavior of ML estimates has been well-studied and shown to be ‘desirable’. You **should use ML when comparing models that differ in their fixed effects**, and you must include `lmer(, REML=FALSE)`. Further, if you're comparing an `lm()` and `lmer() model` (i.e., testing if any random effects are warranted), you should also use ML estimation.
+- In **ML** (Maximum Likelihood) estimation, we calculate the log(likelihood) (LL) of the data for an arbitrary choice of parameter values in sets (i) and (ii) above. We then search for the parameter values that maximize LL (or minimize –LL). These optimal parameter values are called the ML parameter estimates. The maximum value of LL (times -2) is called the deviance of the model. For some purposes, such as, describing the data, we focus on the ML parameter estimates; for other purposes, such as, model comparison, we focus on the deviance. The behavior of ML estimates has been well-studied and shown to be ‘desirable’. You **should use ML when comparing models that differ in their fixed effects**, and you must include `lmer(, REML=FALSE)`. Further, if you're comparing an `lm()` and `lmer() model` (i.e., testing if *any* random effects are warranted), you should also use ML estimation.
 
 - In **REML** (REstricted ML) estimation, our main interest is in estimating the **random effects**, not the fixed effects. Imagine that we restrict our parameter space by setting the fixed effects parameters in set (i) above to certain plausible values. In this restricted space, we search for the values of the random effects parameters in set (ii) that maximize the LL of the data; also note the maximum value of LL. Then repeat this process many times. Then average, across the fixed effects parameter values, the estimates of the random effects parameters and the maximum values of LL. This averaging yields the REML parameter estimates and the REML deviance. Because this process pays scant attention to the fixed effects parameters, **it should not be used to compare models that differ in their fixed effects structure**. You should just **use this when comparing models that differ in their random effects**. To do this, you should get in the habit of including `lmer(, REML=TRUE)`, and using `anova(, refit=FALSE)` when running model comparisons.
 
@@ -317,6 +329,13 @@ Here, the $\chi^2$ distribution isn't always a good approximation of the null di
 ## Item effects
 Now, different stimuli may elicit different values of “pitch”; as a result, pitch for a given scenario may be correlated across subjects, and even within a subject for the polite and informal conditions. We can model this as a random effect!
 
+```{r fig.width=5, fig.height=3}
+d$scenario = factor(d$scenario)
+ggplot(d, aes(x=scenario, y=pitch, 
+              colour=scenario)) +
+    geom_boxplot()
+```
+
 ```{r}
 res4 = lmer(pitch ~ condition + gender + (1|subject) + (1|scenario), data=d)
 summary(res4)
@@ -324,9 +343,32 @@ summary(res4)
 anova(res2, res4, refit=FALSE)
 
 coef(res4)
+# ranef(res4)
 ```
 Similar to the random intercepts for subjects, now we have a mean level of pitch for each scenario!
 
+
+What about varying the slopes for each item?
+```{r}
+d_byscenario = na.omit(d) %>%
+  group_by(scenario, condition) %>%
+  summarise(mean_pitch = mean(pitch))
+  
+ggplot(d_byscenario, aes(x=condition, y=mean_pitch, 
+              colour=scenario, group=scenario)) +
+    geom_line() + geom_point(shape=21, fill="white")
+```
+
+```{r}
+res4b = lmer(pitch ~ condition + gender + (1|subject) + (1 + condition|scenario), data=d)
+summary(res4b)
+
+anova(res4, res4b, refit=FALSE)
+
+# coef(res4b)
+```
+
+Nope, doesn't really improve the model. That probably means our scenarios are probably pretty even in eliciting similar differences between informal and polite situations.
 
 ## Some final notes about mixed modeling
 
