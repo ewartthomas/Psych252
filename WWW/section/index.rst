@@ -207,6 +207,6 @@ Defining the linear mixed effects model, an overview of random intercepts and sl
 significance of models, model comparison, ML vs. REML estimation, and item effects.
 
 [`html <http://web.stanford.edu/class/psych252/section/Mixed_models_tutorial.html>`_]
-[`Rmd <http://web.stanford.edu/class/psych252/Mixed_models_tutorial.Rmd>`_]
+[`Rmd <http://web.stanford.edu/class/psych252/section/Mixed_models_tutorial.Rmd>`_]
 
 ----------------------------

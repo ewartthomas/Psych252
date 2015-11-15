@@ -17,7 +17,7 @@ How is a linear mixed effects model different from the linear models we know alr
 
 Linear mixed models (sometimes called "multilevel models" or "hierarchical models", depending on the context) are a type of regression model that take into account both (1) variation that *is* explained by the independent variables of interest (like `lm()`) -- **fixed effects**, and (2) variation that is *not* explained by the independent variables of interest -- **random effects**. Since the model includes a mixture of fixed and random effects, it's called a **mixed model**. These random effects essentially give structure to the error term $\epsilon$.
 
-The definitions for fixed and random effects can vary (see [here](http://andrewgelman.com/2005/01/25/why_i_dont_use/)) so be careful how you interpret it in the literature; however, for most purposes you can think of a variable as a **fixed effect factor** if data has been collected from all levels of interest (e.g., `gender`: male/female, `condition`: easy/medium/hard, `doseage`: low/high), and as a **random effect factor** if the variable has a bunch of possible levels but you only sample a random collection (e.g., subjects, stimuli, classrooms) and though these samples will have some idiosyncrasies, you generally won't care about them, with the goal of generalizing to the broader population (e.g., all people, all scenarios, all classrooms). 
+The definitions for fixed and random effects can vary (see [here](http://andrewgelman.com/2005/01/25/why_i_dont_use/)) so be careful how you interpret it in the literature; however, for most purposes you can think of a variable as a **fixed effect factor** if data has been collected from all levels of interest (e.g., `gender`: male/female, `condition`: easy/medium/hard, `doseage`: low/high), and as a **random effect factor** if the variable has a bunch of possible levels but you only sample a random collection (e.g., subjects, stimuli, classrooms) and though these samples will have some idiosyncrasies, you generally won't care about them, with the goal of generalizing to the broader population (e.g., all people, all scenarios, all classrooms).
 
 #### Example
 
@@ -41,6 +41,7 @@ d = read.csv('http://www.bodowinter.com/tutorial/politeness_data.csv')
 
 # summary(d)
 # head(d)
+str(d)
 
 # Let's rename some things!
 names(d)[names(d)=="attitude"] <- "condition"
@@ -49,7 +50,8 @@ names(d)
 
 str(d)
 
-table(d$subject, d$gender)
+table(d$subject)
+table(d$subject, d$condition)
 ```
 
 Now let's visualize the data:
@@ -106,7 +108,7 @@ res1 = lmer(pitch ~ (1 | subject), data = d)
 coef(res1)$subject[1]
 
 # fixed effect + random effect by subject
-# fixef(res1)['(Intercept)'] + ranef(res1)$subject
+fixef(res1)['(Intercept)'] + ranef(res1)$subject
 ```
 Note that the estimates are pretty close to the actual mean pitches!
 
@@ -160,7 +162,7 @@ Here, we can see that our mean pitch is 192.88, pitch is lower higher for inform
 
 #### More model information
 
-We can assess the models with many different types of information. When **comparing models** this info can be useful! One useful measure is the **AIC**, which is $deviance + 2*(p+1)$, where $p$ is the number of parameters in the model. Lower AICs are better, since higher deviances mean that the model is not fitting the data well. Since AIC increases as $p$ increases, AIC is penalized for more parameters.
+We can assess the models with many different types of information. When **comparing models** this info can be useful! One useful measure is the **AIC**, which is $deviance + 2*(p+1)$, where $p$ is the number of parameters in the model (here, we've broken the parameters down so 1 is for the estimated residual variance, and $p$ is all the other parameters, e.g., our coefficents for fixed effects + our estimated variances, etc. for the random effects). Lower AICs are better, since higher deviances mean that the model is not fitting the data well. Since AIC increases as $p$ increases, AIC is penalized for more parameters.
 
 $$\text{deviance} = -2*\text{log likelihood}$$
 $$\text{AIC} = \text{deviance} + 2*(p + 1)$$
@@ -171,7 +173,7 @@ deviance = -2*logLikelihood[1]; deviance
 
 # calculate aic by hand
 p = 4 # number of parameters = 3 (fixed) + 1 (random)
-deviance + 2*(p+1)
+deviance + 2*(p+1) # total parameters = 4 + 1 for estimated residual variance
 
 AIC(res2)
 ```
@@ -243,7 +245,7 @@ However, others would argue that we should **keep our models maximal** and shoul
 ## Testing signifiance
 While there's some debate about whether you should get p-values for `lmer()` models (e.g., [this](http://glmm.wikidot.com/faq#df); most of the debate centers around how to compute the dfs), you can get df approximations (and thus, p-values) using the `{lmerTest}` package.
 
-For some examples on how others have written up `lmer()` results in journals, check out [this page](http://web.stanford.edu/class/psych253/section/section_8/lmer_examples.html).
+For some examples on how others have written up `lmer()` results in journals, check out [this page](http://web.stanford.edu/class/psych253/section/section_8/lmer_examples.html). [This](http://pss.sagepub.com/content/early/2014/11/25/0956797614557697.full.pdf+html) *Psych Science* paper is also a good (and short!) example.
 
 ### Getting p-values
 ```{r}
@@ -323,6 +325,8 @@ library(nlme)
 res5c = lme(pitch ~ condition + gender, random=~1|subject, method = 'ML', data = na.omit(d))
 anova(res5c, res5b) # need to put nlme model first
 ```
+
+It looks like, yes, the inclusion of random intercepts for subjects is warranted, $\chi^2$ (1) = 19.51, p < 0.001.
 
 Here, the $\chi^2$ distribution isn't always a good approximation of the null distribution (too conservative when testing some random effects, and not conservative enough when testing some fixed effects), so keep that in mind. You can use a parametric bootstrap to get a better p-value, but we won't cover that here. Check out these [lecture notes](http://www.stat.wisc.edu/~ane/st572/notes/lec21.pdf) for some more info.
 

@@ -109,8 +109,14 @@ code > span.er { color: #ff0000; font-weight: bold; }
 
 <span class="co"># summary(d)</span>
 <span class="co"># head(d)</span>
-
-<span class="co"># Let's rename some things!</span>
+<span class="kw">str</span>(d)</code></pre>
+<pre><code>## 'data.frame':    84 obs. of  5 variables:
+##  $ subject  : Factor w/ 6 levels &quot;F1&quot;,&quot;F2&quot;,&quot;F3&quot;,..: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ gender   : Factor w/ 2 levels &quot;F&quot;,&quot;M&quot;: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ scenario : int  1 1 2 2 3 3 4 4 5 5 ...
+##  $ attitude : Factor w/ 2 levels &quot;inf&quot;,&quot;pol&quot;: 2 1 2 1 2 1 2 1 2 1 ...
+##  $ frequency: num  213 204 285 260 204 ...</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Let's rename some things!</span>
 <span class="kw">names</span>(d)[<span class="kw">names</span>(d)==<span class="st">&quot;attitude&quot;</span>] &lt;-<span class="st"> &quot;condition&quot;</span>
 <span class="kw">names</span>(d)[<span class="kw">names</span>(d)==<span class="st">&quot;frequency&quot;</span>] &lt;-<span class="st"> &quot;pitch&quot;</span>
 <span class="kw">names</span>(d)</code></pre>
@@ -122,15 +128,19 @@ code > span.er { color: #ff0000; font-weight: bold; }
 ##  $ scenario : int  1 1 2 2 3 3 4 4 5 5 ...
 ##  $ condition: Factor w/ 2 levels &quot;inf&quot;,&quot;pol&quot;: 2 1 2 1 2 1 2 1 2 1 ...
 ##  $ pitch    : num  213 204 285 260 204 ...</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">table</span>(d$subject, d$gender)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">table</span>(d$subject)</code></pre>
+<pre><code>## 
+## F1 F2 F3 M3 M4 M7 
+## 14 14 14 14 14 14</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">table</span>(d$subject, d$condition)</code></pre>
 <pre><code>##     
-##       F  M
-##   F1 14  0
-##   F2 14  0
-##   F3 14  0
-##   M3  0 14
-##   M4  0 14
-##   M7  0 14</code></pre>
+##      inf pol
+##   F1   7   7
+##   F2   7   7
+##   F3   7   7
+##   M3   7   7
+##   M4   7   7
+##   M7   7   7</code></pre>
 <p>Now let’s visualize the data:</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(ggplot2)
 <span class="kw">theme_set</span>(<span class="kw">theme_bw</span>(<span class="dt">base_size =</span> <span class="dv">18</span>))
@@ -195,7 +205,14 @@ pitch_bysubj</code></pre>
 ## M4       146.8
 ## M7       103.7</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="co"># fixed effect + random effect by subject</span>
-<span class="co"># fixef(res1)['(Intercept)'] + ranef(res1)$subject</span></code></pre>
+<span class="kw">fixef</span>(res1)[<span class="st">'(Intercept)'</span>] +<span class="st"> </span><span class="kw">ranef</span>(res1)$subject</code></pre>
+<pre><code>##    (Intercept)
+## F1       231.4
+## F2       257.1
+## F3       249.8
+## M3       169.4
+## M4       146.8
+## M7       103.7</code></pre>
 <p>Note that the estimates are pretty close to the actual mean pitches!</p>
 <p>We can see that the actual mean pitch across subjects is the estimated <code>(Intercept)</code>, and the standard deviation across the subjects’ mean pitch is the standard deviation (<code>Std.Dev.</code>) of the random effects!</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Using the raw data</span>
@@ -296,14 +313,14 @@ pitch_bysubj</code></pre>
 <p>Here, we can see that our mean pitch is 192.88, pitch is lower higher for informal than polite scenarios, b=9.71, t=3.03, and pitch is higher for females than males, b=54.10, t=5.14. We can use a rough rule-of-thumb that the <span class="math">\(t\)</span> is probably significant if it’s greater than 2. We’ll talk more about testing significance of estimates in a bit!</p>
 <div id="more-model-information" class="section level4">
 <h4>More model information</h4>
-<p>We can assess the models with many different types of information. When <strong>comparing models</strong> this info can be useful! One useful measure is the <strong>AIC</strong>, which is <span class="math">\(deviance + 2*(p+1)\)</span>, where <span class="math">\(p\)</span> is the number of parameters in the model. Lower AICs are better, since higher deviances mean that the model is not fitting the data well. Since AIC increases as <span class="math">\(p\)</span> increases, AIC is penalized for more parameters.</p>
+<p>We can assess the models with many different types of information. When <strong>comparing models</strong> this info can be useful! One useful measure is the <strong>AIC</strong>, which is <span class="math">\(deviance + 2*(p+1)\)</span>, where <span class="math">\(p\)</span> is the number of parameters in the model (here, we’ve broken the parameters down so 1 is for the estimated residual variance, and <span class="math">\(p\)</span> is all the other parameters, e.g., our coefficents for fixed effects + our estimated variances, etc. for the random effects). Lower AICs are better, since higher deviances mean that the model is not fitting the data well. Since AIC increases as <span class="math">\(p\)</span> increases, AIC is penalized for more parameters.</p>
 <p><span class="math">\[\text{deviance} = -2*\text{log likelihood}\]</span> <span class="math">\[\text{AIC} = \text{deviance} + 2*(p + 1)\]</span></p>
 <pre class="sourceCode r"><code class="sourceCode r">logLikelihood =<span class="st"> </span><span class="kw">logLik</span>(res2)
 deviance =<span class="st"> </span>-<span class="dv">2</span>*logLikelihood[<span class="dv">1</span>]; deviance</code></pre>
 <pre><code>## [1] 789.5</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="co"># calculate aic by hand</span>
 p =<span class="st"> </span><span class="dv">4</span> <span class="co"># number of parameters = 3 (fixed) + 1 (random)</span>
-deviance +<span class="st"> </span><span class="dv">2</span>*(p<span class="dv">+1</span>)</code></pre>
+deviance +<span class="st"> </span><span class="dv">2</span>*(p<span class="dv">+1</span>) <span class="co"># total parameters = 4 + 1 for estimated residual variance</span></code></pre>
 <pre><code>## [1] 799.5</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">AIC</span>(res2)</code></pre>
 <pre><code>## [1] 799.5</code></pre>
@@ -403,7 +420,7 @@ deviance +<span class="st"> </span><span class="dv">2</span>*(p<span class="dv">
 <div id="testing-signifiance" class="section level2">
 <h2>Testing signifiance</h2>
 <p>While there’s some debate about whether you should get p-values for <code>lmer()</code> models (e.g., <a href="http://glmm.wikidot.com/faq#df">this</a>; most of the debate centers around how to compute the dfs), you can get df approximations (and thus, p-values) using the <code>{lmerTest}</code> package.</p>
-<p>For some examples on how others have written up <code>lmer()</code> results in journals, check out <a href="http://web.stanford.edu/class/psych253/section/section_8/lmer_examples.html">this page</a>.</p>
+<p>For some examples on how others have written up <code>lmer()</code> results in journals, check out <a href="http://web.stanford.edu/class/psych253/section/section_8/lmer_examples.html">this page</a>. <a href="http://pss.sagepub.com/content/early/2014/11/25/0956797614557697.full.pdf+html">This</a> <em>Psych Science</em> paper is also a good (and short!) example.</p>
 <div id="getting-p-values" class="section level3">
 <h3>Getting p-values</h3>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(lmerTest)</code></pre>
@@ -549,6 +566,7 @@ bbmle::<span class="kw">AICtab</span>(res5b, res5) <span class="co"># delta (dif
 <pre><code>##       Model df   AIC   BIC logLik   Test L.Ratio p-value
 ## res5c     1  5 816.3 828.4 -403.2                       
 ## res5b     2  4 833.8 843.5 -412.9 1 vs 2   19.51  &lt;.0001</code></pre>
+<p>It looks like, yes, the inclusion of random intercepts for subjects is warranted, <span class="math">\(\chi^2\)</span> (1) = 19.51, p &lt; 0.001.</p>
 <p>Here, the <span class="math">\(\chi^2\)</span> distribution isn’t always a good approximation of the null distribution (too conservative when testing some random effects, and not conservative enough when testing some fixed effects), so keep that in mind. You can use a parametric bootstrap to get a better p-value, but we won’t cover that here. Check out these <a href="http://www.stat.wisc.edu/~ane/st572/notes/lec21.pdf">lecture notes</a> for some more info.</p>
 </div>
 </div>
