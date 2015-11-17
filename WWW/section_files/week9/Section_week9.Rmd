@@ -5,7 +5,7 @@ output: html_document
 
 ## Exploring our homework data!
 
-Now we'll try working with the data from upcoming homework 5 (that was also used in the tutorial in Week 0 if you were there!) to get used to using mixed models.
+Now we'll try working with the data from homework 5 (that was also used in the tutorial in Week 0 if you were there!) to get used to using mixed models.
 
 Let's read about our data in `kv0.csv`!
 
@@ -38,6 +38,7 @@ str(d0)
 d0$subidr = factor(d0$subidr)
 ```
 
+### Converting to "long-form""
 Note that our data is in *wide* or *short-form*: `'data.frame':  20 obs. of  5 variables` 
 
 By short-form, we mean that the within-subject observations are displayed in separate columns, and each subject occupies a single row. 
@@ -45,7 +46,10 @@ By short-form, we mean that the within-subject observations are displayed in sep
 We need the data in *long-form* for `lmer`. The function `reshape` is an economic way to convert between wide and long formats.
 
 ```{r}
-d1 <- reshape(d0, direction="long", idvar="subidr", varying=list(c("num1","num2","num3")), timevar="num", v.names="score" )
+d1 <- reshape(d0, direction="long", 
+              idvar="subidr", 
+              varying=list(c("num1","num2","num3")), 
+              timevar="num", v.names="score" )
 
 head(d1)
 str(d1)
@@ -55,7 +59,7 @@ Now the data is in long form: `'data.frame':  60 obs. of  4 variables`
 
 The number of observations that we have in long format is equal to the number of observations in wide format times the product of levels of the repeated measures (within) variables.
 
-In this case we only have one withing subject variable with 3 levels (number of possible solutions = 1, 2, or 3), so 20 * 3 = 60 observations
+In this case we only have one within subject variable with 3 levels (number of possible solutions = 1, 2, or 3), so 20 * 3 = 60 observations
 
 The added variables are identifiers now.
 
@@ -79,16 +83,16 @@ str(dl)
 
 Basically, we now have a long-form dataframe with 3 rows for each subject.
 
-### Setting up variables
+### Some data preprocessing
 
-Since the levels of 'num' were created from the original column names (i.e., num1, num2, num3), R interprets the 'num' variable as a factor. However, we want to treat num as a quantitative variable, and need to force num to be numeric. We also want the subject id ('id') to be a factor:
+Since the levels of 'num' were created from the original column names (i.e., num1, num2, num3), R interprets the 'num' variable as a factor. However, if we want to treat num as a quantitative variable, we need to force num to be numeric. We also want the subject id ('id') to be a factor:
 
 ```{r forcevars_dl}
 dl$num <- as.numeric(dl$num)
 dl$id <- factor(dl$id)
 ```
 
-We also need to rescale `id` to 1:10 within each level of `attn`, since the subject id ('id') is 11:20 when `attn` is 'focused'. So we need to select only these values of 'id', and transform them to 1:10. This requires creating a new variable, cond.id, in the dataframe, dl.
+We also need to change `id` to be 1:10 within each level of `attn`, since the subject id ('id') is coded 11:20 when `attn` is 'focused', even though the same subject completed both task (i.e., subject 1 = 11, subject 2=12). So we need to select only these values of 'id', and transform them to 1:10. This requires creating a new variable, cond.id, in the dataframe, `dl`.
 
 ```{r rescaleid_dl}
 dl$subj.id <- as.numeric(dl$id)
@@ -100,21 +104,7 @@ Now that we have our dataset ready to go, try plotting the data, and creating an
 
 There are some hints and suggested analyses at the bottom of this document, but try to explore on your own, create your own R script and then compare! Feel free to work with anyone sitting around you.
 
-### Possible analyses
-
-Start with a simple regression and random intercept for subject
-
-```{r}
-res1 = lmer(score ~ num + (1|subj.id), dl)
-summary(res1)
-```
-
-The regression is singnificant and interpretable as usual
-
-Regression equation:
-
-$score$ = 4.76 + .6 * $num$
-
+### Plotting the data
 Let's visualize what we're modeling with the random intercept model.
 
 ```{r}
@@ -130,13 +120,44 @@ Let's visualize what we're modeling with the random intercept model.
 )
 ```
 
-Note that the means for every subject are at slightly different score levels. There is even more variability in the slopes of the lines. We can capture those with another random effects term for a random slope. 
+
+### Possible analyses
+
+Start with a simple regression and random intercept for subject
+
+```{r}
+res1 = lmer(score ~ num + (1|subj.id), dl)
+summary(res1)
+```
+
+The regression is signifiant and interpretable as usual
+
+Regression equation:
+
+$score$ = 4.76 + .6 * $num$
+
+```{r}
+coef(res1)
+```
+
+Note that the intercepts for every subject are at slightly different score levels (i.e., the estimated means are different). However, looking at the plots, we see that there is even more variability in the **slopes** of the lines. We can capture those with another random effects term for a random slope. 
 
 Random intercept and random slope model:
 
 ```{r}
 res2 = lmer(score ~ num + (1 + num|subj.id), dl)
 summary(res2)
+```
+
+The correlation between our random intercepts and slopes for `num` is -1 -- as our intercepts get higher, the slope gets smaller. This is a little suspicious...
+```{r fig.width=3, fig.height=3}
+# correlation between intercept and slope
+data_coefs = data.frame(coef(res2)$subj.id)
+colnames(data_coefs) = c('int', 'num')
+str(data_coefs)
+
+ggplot(data=data_coefs, aes(x=int, y=num)) +
+  geom_point(size=3) + geom_line()
 ```
 
 Note that we now have more coefficients in the random effects table and our main effects have reduced in significance. 
@@ -150,7 +171,6 @@ anova(res1, res2)
 It seems like the model with the random slope does account for significantly more variance! Now you have a research and/or moral dilemma. Do you try to figure out what's causing the variance in slope and intercept? Do you push the simpler but worse model? Or, could there be something else going on?
 
 ```{r}
-str(dl)
 ggplot(dl, aes(x=num, y=score, cond=attn, color=attn)) + 
      facet_wrap(~subj.id, ncol=5, scales='fixed')+
      geom_point()+theme_bw()+
