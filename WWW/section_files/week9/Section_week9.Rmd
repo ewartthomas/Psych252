@@ -92,11 +92,9 @@ dl$num <- as.numeric(dl$num)
 dl$id <- factor(dl$id)
 ```
 
-We also need to change `id` to be 1:10 within each level of `attn`, since the subject id ('id') is coded 11:20 when `attn` is 'focused', even though the same subject completed both task (i.e., subject 1 = 11, subject 2=12). So we need to select only these values of 'id', and transform them to 1:10. This requires creating a new variable, cond.id, in the dataframe, `dl`.
-
+# rename to be subj
 ```{r rescaleid_dl}
-dl$subj.id <- as.numeric(dl$id)
-dl$subj.id[dl$attn=="focused"] = dl$subj.id[dl$attn=="focused"] - 10
+dl$subj.id <- factor(dl$id)
 head(dl)
 ```
 
@@ -108,6 +106,7 @@ There are some hints and suggested analyses at the bottom of this document, but 
 Let's visualize what we're modeling with the random intercept model.
 
 ```{r}
+library(ggplot2)
 (ggplot(dl, aes(x=num, y=score))
      #tell ggplot what data is, and x and y variables
      +facet_wrap(~subj.id, ncol=5, scales='free')
@@ -126,6 +125,7 @@ Let's visualize what we're modeling with the random intercept model.
 Start with a simple regression and random intercept for subject
 
 ```{r}
+library(lme4)
 res1 = lmer(score ~ num + (1|subj.id), dl)
 summary(res1)
 ```
@@ -149,7 +149,7 @@ res2 = lmer(score ~ num + (1 + num|subj.id), dl)
 summary(res2)
 ```
 
-The correlation between our random intercepts and slopes for `num` is -1 -- as our intercepts get higher, the slope gets smaller. This is a little suspicious...
+The correlation between our random intercepts and slopes for `num` is basically -1 -- as our intercepts get higher, the slope gets smaller. This is a little suspicious...
 ```{r fig.width=3, fig.height=3}
 # correlation between intercept and slope
 data_coefs = data.frame(coef(res2)$subj.id)
@@ -165,7 +165,7 @@ Note that we now have more coefficients in the random effects table and our main
 Is the variance in terms of intercept and slope enough that we need both random terms? We can formally answer this question using `anova` as seen above. 
 
 ```{r}
-anova(res1, res2)
+anova(res1, res2, refit=FALSE)
 ```
 
 It seems like the model with the random slope does account for significantly more variance! Now you have a research and/or moral dilemma. Do you try to figure out what's causing the variance in slope and intercept? Do you push the simpler but worse model? Or, could there be something else going on?
@@ -250,6 +250,6 @@ ggplot(dl, aes(x=num, y=score, cond=attn, color=attn)) +
   stat_smooth(method='lm')
 ```
 
-There is a significant interaction between number of solutions to the puzzle and attention condition, t = -3.399, such that as the number of solutions to the puzzle decreases (i.e., as the puzzle gets harder) the effect of attention condition on score changes; specifically, when the number of solutions is lowest, divided attention results in a lower score than focused attention. In contrast, when there are more solutions to the puzzle, there is less of a score difference between the divided attention and focused attention conditions.
+There is a significant interaction between number of solutions to the puzzle and attention condition, t = -3.101, p < 0.01, such that as the number of solutions to the puzzle decreases (i.e., as the puzzle gets harder) the effect of attention condition on score changes; specifically, when the number of solutions is lowest, divided attention results in a lower score than focused attention. In contrast, when there are more solutions to the puzzle, there is less of a score difference between the divided attention and focused attention conditions.
 
 
