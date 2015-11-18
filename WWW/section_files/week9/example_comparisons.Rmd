@@ -73,3 +73,11 @@ model5.1 = lmer(Recall ~ Task * Valence + (1 + Task|Subject), data=d)
 # model5.2 = lmer(Recall ~ Task * Valence + (1 + Task*Valence|Subject), data=d)
 # anova(model5.1, model5.2)
 ```
+
+
+## Compare to aov
+```{r}
+anova(lmer(Recall ~ Task * Valence + (1|Subject), data=d))
+summary(aov(Recall~(Task*Valence)+Error(Subject),d)) # same as lmer w/random intercepts
+summary(aov(Recall~(Task*Valence)+Error(Subject/(Task*Valence)),d))
+```

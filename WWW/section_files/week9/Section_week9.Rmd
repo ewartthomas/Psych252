@@ -111,7 +111,7 @@ dl$num <- as.numeric(dl$num)
 dl$id <- factor(dl$id)
 ```
 
-# rename to be subj
+Rename var to be subj
 ```{r rescaleid_dl}
 dl$subj.id <- factor(dl$id)
 head(dl)
@@ -273,5 +273,3 @@ ggplot(dl, aes(x=num, y=score, cond=attn, color=attn)) +
 There is a significant interaction between number of solutions to the puzzle and attention condition, $t(38) = -3.68, p < 0.01$, such that as the number of solutions to the puzzle decreases (i.e., as the puzzle gets harder) the effect of attention condition on score changes; specifically, when the number of solutions is lowest, divided attention results in a lower score than focused attention. In contrast, when there are more solutions to the puzzle, there is less of a score difference between the divided attention and focused attention conditions.
 
 Note you should also test for simple effects if you want to be thorough!
-
-
