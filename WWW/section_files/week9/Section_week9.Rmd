@@ -1,11 +1,15 @@
 ---
-title: "HW5 data"
-output: html_document
+title: "A mixed model example from HW5"
+output:
+  html_document:
+    highlight: pygments
+    theme: flatly
+    toc: yes
 ---
 
 ## Exploring our homework data!
 
-Now we'll try working with the data from homework 5 (that was also used in the tutorial in Week 0 if you were there!) to get used to using mixed models.
+Here we'll try working with the data from homework 5 (that was also used in the tutorial in Week 0 if you were there!) to get used to using mixed models.
 
 Let's read about our data in `kv0.csv`!
 
@@ -100,7 +104,7 @@ However you want to do it, we now have a long-form dataframe with 3 rows for eac
 
 ### Some data preprocessing
 
-Since the levels of 'num' were created from the original column names (i.e., num1, num2, num3), R interprets the 'num' variable as a factor. However, if we want to treat num as a quantitative variable, we need to force num to be numeric. We also want the subject id ('id') to be a factor:
+Since the levels of 'num' were created from the original column names (i.e., num1, num2, num3), R interprets the 'num' variable as a factor. However, if we want to treat num as a quantitative variable, we need to force num to be numeric. Whether you treat it as a factor or not depends on many factors, so we'll leave you to decide which to use for HW5! We also want the subject id ('id') to be a factor:
 
 ```{r forcevars_dl}
 dl$num <- as.numeric(dl$num)
@@ -122,16 +126,16 @@ Let's visualize what we're modeling with the random intercept model.
 
 ```{r}
 library(ggplot2)
-(ggplot(dl, aes(x=num, y=score))
+theme_set(theme_bw(base_size = 18))
+ggplot(dl, aes(x=num, y=score)) +
      #tell ggplot what data is, and x and y variables
-     +facet_wrap(~subj.id, ncol=5, scales='free')
+     facet_wrap(~subj.id, ncol=5, scales='free') +
      #add a wrapping by unique combos of 2 variable
      #set num columns, and vary scales per facet.
-     +geom_point()
+     geom_point()+
      #add the points as representations
-     +stat_smooth(method='lm', aes(group=1))
+     stat_smooth(method='lm', aes(group=1))
      #add the linear fits.
-)
 ```
 
 
@@ -141,6 +145,7 @@ Start with a simple regression and random intercept for subject
 
 ```{r}
 library(lme4)
+library(lmerTest)
 res1 = lmer(score ~ num + (1|subj.id), dl)
 summary(res1)
 ```
@@ -223,10 +228,10 @@ coef(res4c)
 res4a = lmer(score ~ scale(num, scale=FALSE) + attn + (1|subj.id), REML=TRUE, dl)
 summary(res4a)
 
-anova(res4a, res4b)
-anova(res4a, res4c)
+anova(res4a, res4b, refit=FALSE)
+anova(res4a, res4c, refit=FALSE)
 
-# res4a is still the best!
+# res4a is still the best! though you could argue that 4b is capturing some variance too...
 summary(res4a)
 ```
 
@@ -249,10 +254,10 @@ res6b = lmer(score ~ scale(num, scale=FALSE) * attn + (1+num|subj.id), REML=TRUE
 
 res6c = lmer(score ~ scale(num, scale=FALSE) * attn + (1+attn|subj.id), REML=TRUE, dl)
 
-anova(res6a, res6b)
-anova(res6a, res6c)
+anova(res6a, res6b, refit=FALSE)
+anova(res6a, res6c, refit=FALSE)
 
-summary(res6a)
+summary(res6a) # adding random slopes didn't help much...
 
 # compare to lm
 summary(lm(score ~ scale(num, scale=FALSE) * attn, data=dl))
@@ -265,6 +270,8 @@ ggplot(dl, aes(x=num, y=score, cond=attn, color=attn)) +
   stat_smooth(method='lm')
 ```
 
-There is a significant interaction between number of solutions to the puzzle and attention condition, t = -3.101, p < 0.01, such that as the number of solutions to the puzzle decreases (i.e., as the puzzle gets harder) the effect of attention condition on score changes; specifically, when the number of solutions is lowest, divided attention results in a lower score than focused attention. In contrast, when there are more solutions to the puzzle, there is less of a score difference between the divided attention and focused attention conditions.
+There is a significant interaction between number of solutions to the puzzle and attention condition, $t(38) = -3.68, p < 0.01$, such that as the number of solutions to the puzzle decreases (i.e., as the puzzle gets harder) the effect of attention condition on score changes; specifically, when the number of solutions is lowest, divided attention results in a lower score than focused attention. In contrast, when there are more solutions to the puzzle, there is less of a score difference between the divided attention and focused attention conditions.
+
+Note you should also test for simple effects if you want to be thorough!
 
 
