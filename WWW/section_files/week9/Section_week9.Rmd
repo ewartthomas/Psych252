@@ -30,6 +30,8 @@ Variables:
 Let's read in our data!
 
 ```{r}
+library(ggplot2)
+library(lme4)
 d0 <- read.csv('http://www.stanford.edu/class/psych252/data/kv0.csv')
 
 str(d0)
@@ -81,7 +83,20 @@ head(dl)
 str(dl)
 ```
 
-Basically, we now have a long-form dataframe with 3 rows for each subject.
+It has also become increasingly standard to use the `gather()` function from the `tidyr` package to get data into long form. `tidyr` was written by Hadley Wickem (author of `ggplot` and `dplyr`), and many people prefer to stay within this cluster of packages, since they share similar syntax and work nicely with one another. 
+
+```{r tidyr}
+# install.packages('reshape2')
+library(tidyr)
+
+dl_alt <- gather(d0, 
+                 num, score, # name of new key, values columns
+                 num1, num2, num3) # columns you want to gather up
+
+str(dl_alt) # note 'variable' and 'value' names not specified
+```
+
+However you want to do it, we now have a long-form dataframe with 3 rows for each subject.
 
 ### Some data preprocessing
 
