@@ -210,3 +210,28 @@ significance of models, model comparison, ML vs. REML estimation, and item effec
 [`Rmd <http://web.stanford.edu/class/psych252/section/Mixed_models_tutorial.Rmd>`_]
 
 ----------------------------
+
+Week 9
+################
+
+Homework 5 example
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Walk through an example from HW5. 
+
+[`html <http://web.stanford.edu/class/psych252/section/Section_week9.html>`_]
+[`Rmd <http://web.stanford.edu/class/psych252/section/Section_week9.Rmd>`_]
+
+
+Practice with mixed effects model comparisons
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Given 2 models, figure out which type of estimation (ML, REML) to use for fitting the model,
+and then determine how to compare the models (e.g., likelihood ratio test comparing difference in deviances, AIC, etc.).
+
+[`PDF <http://web.stanford.edu/class/psych252/section/lmer_comparison_handout.pdf>`_]
+[`html <http://web.stanford.edu/class/psych252/section/example_comparisons.html>`_]
+[`Rmd <http://web.stanford.edu/class/psych252/section/example_comparisons.Rmd>`_]
+
+
+----------------------------
