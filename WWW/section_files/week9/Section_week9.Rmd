@@ -252,10 +252,11 @@ res6a = lmer(score ~ scale(num, scale=FALSE) * attn + (1|subj.id), REML=TRUE, dl
 
 res6b = lmer(score ~ scale(num, scale=FALSE) * attn + (1+num|subj.id), REML=TRUE, dl)
 
-res6c = lmer(score ~ scale(num, scale=FALSE) * attn + (1+attn|subj.id), REML=TRUE, dl)
+# Can't do this with this dataset, since attn is not within subject!
+# res6c = lmer(score ~ scale(num, scale=FALSE) * attn + (1+attn|subj.id), REML=TRUE, dl)
 
 anova(res6a, res6b, refit=FALSE)
-anova(res6a, res6c, refit=FALSE)
+# anova(res6a, res6c, refit=FALSE)
 
 summary(res6a) # adding random slopes didn't help much...
 
