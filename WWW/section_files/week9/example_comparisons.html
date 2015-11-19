@@ -79,6 +79,19 @@ code > span.er { color: #ff0000; font-weight: bold; }
 <span class="kw">theme_set</span>(<span class="kw">theme_bw</span>(<span class="dt">base_size =</span> <span class="dv">18</span>))
 <span class="kw">library</span>(lme4)</code></pre>
 <pre><code>## Loading required package: Matrix</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(lmerTest)</code></pre>
+<pre><code>## Warning: replacing previous import by 'MASS::negative.binomial' when
+## loading 'pbkrtest'</code></pre>
+<pre><code>## 
+## Attaching package: 'lmerTest'
+## 
+## The following object is masked from 'package:lme4':
+## 
+##     lmer
+## 
+## The following object is masked from 'package:stats':
+## 
+##     step</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r">d =<span class="st"> </span><span class="kw">read.table</span>(<span class="st">'http://www.stanford.edu/class/psych252/data/ex4.txt'</span>)
 <span class="kw">str</span>(d)</code></pre>
 <pre><code>## 'data.frame':    30 obs. of  5 variables:
@@ -106,8 +119,17 @@ code > span.er { color: #ff0000; font-weight: bold; }
 <pre class="sourceCode r"><code class="sourceCode r">model1<span class="fl">.1</span> =<span class="st"> </span><span class="kw">lm</span>(Recall ~<span class="st"> </span>Task, <span class="dt">data=</span>d)
 model1<span class="fl">.2</span> =<span class="st"> </span><span class="kw">lmer</span>(Recall ~<span class="st"> </span>Task +<span class="st"> </span>(<span class="dv">1</span>|Subject), <span class="dt">REML=</span><span class="ot">FALSE</span>, <span class="dt">data=</span>d)
 
-<span class="co"># anova(model2, model1) # this might work, depending on version of lme4</span>
-NL1 &lt;-<span class="st"> </span>-<span class="kw">logLik</span>(model1<span class="fl">.2</span>) <span class="co"># complex model</span>
+<span class="kw">anova</span>(model1<span class="fl">.2</span>, model1<span class="fl">.1</span>) <span class="co"># this might work, depending on version of lme4</span></code></pre>
+<pre><code>## Data: d
+## Models:
+## ..1: Recall ~ Task
+## object: Recall ~ Task + (1 | Subject)
+##        Df AIC BIC logLik deviance Chisq Chi Df Pr(&gt;Chisq)    
+## ..1     3 170 175  -82.3      164                            
+## object  4 141 147  -66.7      133  31.1      1    2.4e-08 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">NL1 &lt;-<span class="st"> </span>-<span class="kw">logLik</span>(model1<span class="fl">.2</span>) <span class="co"># complex model</span>
 NL0 &lt;-<span class="st"> </span>-<span class="kw">logLik</span>(model1<span class="fl">.1</span>) <span class="co"># simpler model</span>
 devdiff &lt;-<span class="st"> </span><span class="dv">2</span>*(NL0-NL1)[<span class="dv">1</span>]; devdiff <span class="co"># equivalent of chisq</span></code></pre>
 <pre><code>## [1] 31.12</code></pre>
@@ -123,11 +145,11 @@ model2<span class="fl">.2</span> =<span class="st"> </span><span class="kw">lmer
 <span class="kw">anova</span>(model2<span class="fl">.1</span>, model2<span class="fl">.2</span>)</code></pre>
 <pre><code>## Data: d
 ## Models:
-## model2.1: Recall ~ Task + (1 | Subject)
-## model2.2: Recall ~ Task + Valence + (1 | Subject)
-##          Df AIC BIC logLik deviance Chisq Chi Df Pr(&gt;Chisq)
-## model2.1  4 141 147  -66.7      133                        
-## model2.2  6 142 150  -64.9      130  3.57      2       0.17</code></pre>
+## object: Recall ~ Task + (1 | Subject)
+## ..1: Recall ~ Task + Valence + (1 | Subject)
+##        Df AIC BIC logLik deviance Chisq Chi Df Pr(&gt;Chisq)
+## object  4 141 147  -66.7      133                        
+## ..1     6 142 150  -64.9      130  3.57      2       0.17</code></pre>
 </div>
 <div id="example-3" class="section level2">
 <h2>Example 3</h2>
@@ -147,11 +169,11 @@ model4<span class="fl">.2</span> =<span class="kw">lmer</span>(Recall ~<span cla
 <span class="kw">anova</span>(model4<span class="fl">.1</span>, model4<span class="fl">.2</span>, <span class="dt">refit=</span><span class="ot">FALSE</span>)</code></pre>
 <pre><code>## Data: d
 ## Models:
-## model4.1: Recall ~ Task + (1 | Subject)
-## model4.2: Recall ~ Task + (1 + Task | Subject)
-##          Df AIC BIC logLik deviance Chisq Chi Df Pr(&gt;Chisq)
-## model4.1  4 139 145  -65.5      131                        
-## model4.2  6 139 148  -63.7      127  3.69      2       0.16</code></pre>
+## object: Recall ~ Task + (1 | Subject)
+## ..1: Recall ~ Task + (1 + Task | Subject)
+##        Df AIC BIC logLik deviance Chisq Chi Df Pr(&gt;Chisq)
+## object  4 139 145  -65.5      131                        
+## ..1     6 139 148  -63.7      127  3.69      2       0.16</code></pre>
 </div>
 <div id="example-5" class="section level2">
 <h2>Example 5</h2>
