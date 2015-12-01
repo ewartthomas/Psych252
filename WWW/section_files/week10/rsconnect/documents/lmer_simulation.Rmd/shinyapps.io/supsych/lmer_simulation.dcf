@@ -1,0 +1,8 @@
+name: lmer_simulation
+account: supsych
+server: shinyapps.io
+bundleId: 322642
+url: https://supsych.shinyapps.io/lmer_simulation
+when: 1449002589.91315
+asMultiple: FALSE
+asStatic: FALSE

@@ -193,7 +193,7 @@ Practice with mediation & partial correlations
 Walk through mediation and partial correlations using the caffeine dataset.
 
 [`html <http://web.stanford.edu/class/psych252/section/Section_week7.html>`_]
-[`Rmd <http://web.stanford.edu/class/psych252/sectionSection_week7.Rmd>`_]
+[`Rmd <http://web.stanford.edu/class/psych252/section/Section_week7.Rmd>`_]
 
 ----------------------------
 
@@ -217,11 +217,10 @@ Week 9
 Homework 5 example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Walk through an example from HW5. 
+Walk through an example from HW5.
 
 [`html <http://web.stanford.edu/class/psych252/section/Section_week9.html>`_]
 [`Rmd <http://web.stanford.edu/class/psych252/section/Section_week9.Rmd>`_]
-
 
 Practice with mixed effects model comparisons
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -235,3 +234,14 @@ and then determine how to compare the models (e.g., likelihood ratio test compar
 
 
 ----------------------------
+
+Week 10
+################
+
+Exploring lmer with simulated data
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Try changing the parameters (e.g., between subject variability in intercept) and see how models fit with random intercepts and slopes differ.
+
+[`html <https://supsych.shinyapps.io/lmer_simulation>`_]
+[`Rmd <http://web.stanford.edu/class/psych252/section/lmer_simulation.Rmd>`_]

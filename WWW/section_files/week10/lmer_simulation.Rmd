@@ -1,0 +1,157 @@
+---
+title: "Analyze simulated data with lmer"
+runtime: shiny
+output:
+  html_document:
+    highlight: pygments
+    theme: flatly
+---
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(shiny)
+library(ggplot2)
+theme_set(theme_bw(base_size = 18))
+library(tidyr)
+library(lme4)
+library(lmerTest)
+library(dplyr)
+```
+
+```{r, echo=FALSE}
+create_dataframe = function(n, mean_diff, sd_wsub, sd_bsub_int, sd_bsub_slope, num_samples){
+  ###########################################
+  # Specify some parameters, and generate a dataset with 2 samples/subj per 2 conditions
+  # n (int): number of participants
+  # mean_diff (num/int): mean difference between condition 1 and 2
+  # sd_wsub (num/int): sd for multiple samples taken within-subject
+  # sd_bsub_int (num/int): sd for intercept variation between subjs
+  # sd_bsub_slope (num/int): sd for slope variation (diff between cond1 and 2) between subjs
+  ###########################################
+  
+  # initialize list of samples
+  df_list <- vector(mode = "list", length = num_samples)
+  
+  # create 1st sample for each subj, for each condition, 
+  # with some variability for slope between subjects, and 
+  # variability for intercept between subjects
+  cond1 = rnorm(n = n, mean = 5, sd = sd_bsub_int)
+  cond2 = cond1 + rnorm(n = n, mean = mean_diff, sd = sd_bsub_slope)
+  d = data.frame(subid=c(1:n), cond1, cond2)
+  df_list[[1]] = gather(d, condition, value, cond1, cond2)
+  
+  if (num_samples > 1){
+    for (sample in 2:num_samples){
+      # create other sample(s) for each subj, adding some within subj variability (noise)
+      cond1 = cond1 + rnorm(n = n, mean = 0, sd = sd_wsub)
+      cond2 = cond2 + rnorm(n = n, mean = 0, sd = sd_wsub)
+      d = data.frame(subid=c(1:n), cond1, cond2)
+      df_list[[sample]] = gather(d, condition, value, cond1, cond2)
+      }
+    }
+  
+  # bind samples into one long dataframe
+  dl = bind_rows(df_list)
+  dl$subid = factor(dl$subid)
+  
+  return(dl)
+}
+```
+
+```{r, echo=FALSE}
+inputPanel(
+  selectInput("n", label = "Number of subjects:",
+              choices = c(10, 20, 50, 100), selected = 50),
+  
+  sliderInput("num_samples", label = "Number of samples per condition per subject:",
+              min = 1, max = 10, value = 2, step = 1),
+  
+  sliderInput("mean_diff", label = "True slope:",
+              min = 1, max = 10, value = 5, step = 1),
+  
+  sliderInput("sd_wsub", label = "Within subject variability:",
+              min = 1, max = 10, value = 4, step = 1),
+  
+  sliderInput("sd_bsub_int", label = "Between subject variability in intercept:",
+              min = 1, max = 10, value = 3, step = 1),
+  
+  sliderInput("sd_bsub_slope", label = "Between subject variability in slope:",
+              min = 1, max = 10, value = 8, step = 1)
+)
+
+
+  datasetInput <- reactive({
+    dl = create_dataframe(input$n, input$mean_diff, input$sd_wsub, 
+                          input$sd_bsub_int, input$sd_bsub_slope, input$num_samples)
+  })
+  
+renderText({
+  "Plots for sample of 10 subjects"
+})
+
+renderPlot({
+  dl = datasetInput()
+  dl_sample = dl[dl$subid %in% sample(unique(dl$subid), size = 10),]
+  p = ggplot(dl_sample, aes(x=condition, y=value, group=subid, colour=subid)) + 
+    geom_point() + 
+    geom_smooth(method='lm') +
+    facet_wrap(~subid, ncol = 5)
+  print(p)
+})
+
+renderText({
+  "Random intercept model"
+})
+
+renderPrint({
+  dl = datasetInput()
+  res1a = lmer(value ~ condition + (1|subid), data=dl)
+  print(summary(res1a))
+})
+  
+
+renderText({
+  "Random intercept + slope model"
+})
+
+renderPrint({  
+  dl = datasetInput()
+  res2a = lmer(value ~ condition + (1 + condition|subid), data=dl)
+  print(summary(res2a))
+})  
+  
+
+renderText({
+  "Model comparison"
+})
+
+
+renderPrint({
+  dl = datasetInput()
+  res1a = lmer(value ~ condition + (1|subid), data=dl)
+  res2a = lmer(value ~ condition + (1 + condition|subid), data=dl)
+  print(anova(res1a, res2a, refit=FALSE))
+})
+
+renderText({
+  "Estimated fixed effect regression line (blue), with subject-specific regression lines (black)"
+})
+
+renderPlot({
+    dl = datasetInput()
+    res2a = lmer(value ~ condition + (1 + condition|subid), data=dl)
+    df_estimate = coef(res2a)$subid
+    names(df_estimate) = c("intercept", "slope")
+    df_ffx = data.frame(t(fixef(res2a)))
+    names(df_ffx) = c("intercept", "slope")
+    
+    p = ggplot(dl, aes(condition, value, colour=subid)) + 
+      geom_point(alpha=0, position = position_jitter(w = 0.1)) +
+      guides(colour=FALSE) +
+      geom_abline(aes(intercept=intercept, slope=slope), data=df_estimate, alpha=.3) +
+      geom_abline(aes(intercept=intercept, slope=slope), data=df_ffx, 
+                  color='dodgerblue', linetype='longdash', size=2) +
+      theme(aspect.ratio=3/4)
+    print(p)
+  })
+```
+

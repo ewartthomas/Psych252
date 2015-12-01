@@ -1,0 +1,135 @@
+---
+title: "Comparing lmer models with variable slopes"
+output:
+  html_document:
+    highlight: pygments
+    theme: flatly
+    toc: yes
+---
+
+```{r}
+library(ggplot2)
+theme_set(theme_bw(base_size = 18))
+library(tidyr)
+library(lme4)
+library(lmerTest)
+library(plyr)
+```
+
+## Function to generate data
+
+Create function to generate data, given some variability parameters, etc.
+```{r}
+create_dataframe = function(n, mean_diff, sd_wsub, sd_bsub_int, sd_bsub_slope, num_samples){
+  ###########################################
+  # Specify some parameters, and generate a dataset with 2 samples/subj per 2 conditions
+  # n (int): number of participants
+  # mean_diff (num/int): mean difference between condition 1 and 2
+  # sd_wsub (num/int): sd for multiple samples taken within-subject
+  # sd_bsub_int (num/int): sd for intercept variation between subjs
+  # sd_bsub_slope (num/int): sd for slope variation (diff between cond1 and 2) between subjs
+  ###########################################
+  
+  # initialize list of samples
+  df_list <- vector(mode = "list", length = num_samples)
+  
+  # create 1st sample for each subj, for each condition, 
+  # with some variability for slope between subjects, and 
+  # variability for intercept between subjects
+  cond1 = rnorm(n = n, mean = 5, sd = sd_bsub_int)
+  cond2 = cond1 + rnorm(n = n, mean = mean_diff, sd = sd_bsub_slope)
+  d = data.frame(subid=c(1:n), cond1, cond2)
+  df_list[[1]] = gather(d, condition, value, cond1, cond2)
+  
+  if (num_samples > 1){
+    for (sample in 2:num_samples){
+      # create other sample(s) for each subj, adding some within subj variability (noise)
+      cond1 = cond1 + rnorm(n = n, mean = 0, sd = sd_wsub)
+      cond2 = cond2 + rnorm(n = n, mean = 0, sd = sd_wsub)
+      d = data.frame(subid=c(1:n), cond1, cond2)
+      df_list[[sample]] = gather(d, condition, value, cond1, cond2)
+      }
+    }
+  
+  # bind samples into one long dataframe
+  dl = ldply(df_list, data.frame)
+  dl$subid = factor(dl$subid)
+  
+  return(dl)
+}
+```
+
+## Variable slopes across subjects
+```{r}
+n = 100
+mean_diff = 5 # diff between cond 1 and 2
+sd_wsub = 4
+sd_bsub_int = 3 
+sd_bsub_slope = 8
+num_samples = 2
+
+dl = create_dataframe(n, mean_diff, sd_wsub, sd_bsub_int, sd_bsub_slope, num_samples)
+
+dl_sample = dl[dl$subid %in% sample(unique(dl$subid), size = 15),]
+
+ggplot(dl_sample, aes(x=condition, y=value, group=subid, colour=subid)) + 
+  geom_point() + 
+  geom_smooth(method='lm') +
+  facet_wrap(~subid, ncol = 5)
+
+res1a = lmer(value ~ condition + (1|subid), data=dl)
+summary(res1a)
+res2a = lmer(value ~ condition + (1 + condition|subid), data=dl)
+summary(res2a)
+anova(res1a, res2a, refit=FALSE)
+```
+
+## Less variable slopes across subjects
+```{r}
+n = 100
+mean_diff = 5 # diff between cond 1 and 2
+sd_wsub = 4
+sd_bsub_int = 3
+sd_bsub_slope = .1
+num_samples = 2
+
+dl = create_dataframe(n, mean_diff, sd_wsub, sd_bsub_int, sd_bsub_slope, num_samples)
+
+dl_sample = dl[dl$subid %in% sample(unique(dl$subid), size = 15),]
+ggplot(dl_sample, aes(x=condition, y=value, group=subid, colour=subid)) + 
+  geom_point() + 
+  geom_smooth(method='lm') +
+  facet_wrap(~subid, ncol=5)
+
+res1b = lmer(value ~ condition + (1|subid), data=dl)
+summary(res1b)
+res2b = lmer(value ~ condition + (1 + condition|subid), data=dl)
+summary(res2b)
+anova(res1b, res2b, refit=FALSE)
+```
+
+## Variable slopes across subjects, one sample
+```{r}
+n = 100
+mean_diff = 5 # diff between cond 1 and 2
+sd_wsub = 4
+sd_bsub_int = 3 
+sd_bsub_slope = 8
+num_samples = 1
+
+dl = create_dataframe(n, mean_diff, sd_wsub, sd_bsub_int, sd_bsub_slope, num_samples)
+
+dl_sample = dl[dl$subid %in% sample(unique(dl$subid), size = 15),]
+
+ggplot(dl_sample, aes(x=condition, y=value, group=subid, colour=subid)) + 
+  geom_point() + 
+  geom_smooth(method='lm') +
+  facet_wrap(~subid, ncol = 5)
+
+res1c = lmer(value ~ condition + (1|subid), data=dl)
+summary(res1c)
+# res2c = lmer(value ~ condition + (1 + condition|subid), data=dl)
+# summary(res2c)
+# anova(res1c, res2c, refit=FALSE)
+```
+
