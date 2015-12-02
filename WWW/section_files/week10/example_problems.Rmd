@@ -148,11 +148,32 @@ rs5 = lm(guiltcat ~ mentill * scale(futhrt, scale=F), data=df_jury)
 summary(rs5)
 ```
 
-*Write up, including (1) the statistics, (2) the direction of the effect, and (3) a quick explanation:*
+Some stats:
+```{r}
+library(doBy)
+summaryBy(guiltcat~mentill, data = df_jury, 
+          FUN = function(x) { c(m = mean(x), s = sd(x)) } )
+```
 
-Here, we can see that there is a main effect of mental illness on guilt such that those perceived as *not* mentally ill have ratings about 1.6 points higher than on the guilt scale, $t(238) = 15.09, p < 0.001$. Perhaps mentally ill people seem less responsible for their crimes, and thus have reduced guilt status. Without controlling for mental illness, perceived future threat does not influence guilt, $t(238) = -0.99, p = 0.216$. 
+Plot with standard error bars (as you might do in a paper):
+```{r}
+# Load in some helper functions
+source('http://www.stanford.edu/class/psych252/data/Plotting_means_errorbars.R')
 
-However, and most importantly, the model that best explains the data includes an interaction between mental illness and future threat, adjusted $R^2 = 0.51, F(3, 236) = 85.18, p < 0.001.$ This interactive model does a significantly better job fitting the data than an additive model, $F(1,$ `r nrow(df_jury)-(2+1+1)` $) = 8.54, p < 0.01$.Here we observe a significant interaction between perceived future threat and mental illness on guilt ratings, $t(236)=2.92, p < 0.01$. Specifically, for those perceived as not mentally ill, we observed a significant simple effect of future threat on guilt, such that as future threat increases by one unit, guilt increases by 0.19 points, $t(236) = 3.90, p < 0.001$. However, for those perceived as mentally ill, there is not a significant simple effect of future threat on guilt, $b=-0.006, t(236) = -0.126, p = 0.90$. This suggests that the jury believes that since non-mentally ill people can control their actions, the more of a future threat they are to society, the guiltier they should be. However, for mentally ill people, since their actions might be out of their control, even if they might be a greater future threat to society this future threat shouldn't influence their current guilt. 
+df_summary = summarySE(df_jury, measurevar='guiltcat', groupvars=c('mentill'))
+df_summary
+
+ggplot(df_summary, aes(x=mentill, y=guiltcat, group=1)) + 
+    geom_errorbar(aes(ymin=guiltcat-se, ymax=guiltcat+se), colour="black", width=.1) +
+    geom_line() +
+    geom_point(size=5, shape=21, fill="white") # 21 is filled circle
+```
+
+**Write up, including (1) the statistics (note the reporting of descriptive stats!), (2) the direction of the effect(s), and (3) a quick explanation about what the stats mean:**
+
+Here, we can see that there is a main effect of mental illness on guilt such that those perceived as *not* mentally ill have ratings about 1.6 points higher than on the guilt scale, $t(238) = 15.09, p < 0.001$ (not mentally ill $M = 3.28$, $SD = 0.82$; mentally ill $M = 1.73$, $SD = 0.78$). Perhaps mentally ill people seem less responsible for their crimes, and thus have reduced guilt status. Without controlling for mental illness, perceived future threat does not significantly influence guilt, $t(238) = -0.99, p = 0.216$. 
+
+However, and most importantly, the model that best explains the data includes an interaction between mental illness and future threat (adjusted $R^2 = 0.51, F(3, 236) = 85.18, p < 0.001$). This interactive model does a significantly better job fitting the data than an additive model, $F(1,$ `r nrow(df_jury)-(2+1+1)` $) = 8.54, p < 0.01$. Here we observe a significant interaction between perceived future threat and mental illness on guilt ratings, $t(236)=2.92, p < 0.01$. Specifically, for those perceived as not mentally ill, we observed a significant simple effect of future threat on guilt, such that as future threat increases by one unit, guilt increases by 0.19 points, $t(236) = 3.90, p < 0.001$. However, for those perceived as mentally ill, there is not a significant simple effect of future threat on guilt, $b=-0.006, t(236) = -0.126, p = 0.90$. This suggests that the jury believes that since non-mentally ill people can control their actions, the more of a future threat they are to society, the guiltier they should be. However, for mentally ill people, since their actions might be out of their control, even if they might be a greater future threat to society this future threat shouldn't influence their current guilt. 
 
 Further, this interaction is qualified by significant lower order effects of mental illness and future threat; controlling for future threat, mental illness .... [here you would continue writing up lower order results! while the interaction is where the meat of the analysis is at, it's often preferable to report the full results].
 
@@ -161,6 +182,7 @@ ggplot(df_jury, aes(futhrt, guiltcat, color=mentill, fill=mentill)) +
   geom_point(position=position_jitter(height=0.05,width=0.05), alpha=.5) +
   geom_smooth(method='lm')
 ```
+
 
 
 ### Question 3
@@ -181,6 +203,10 @@ ggplot(df_jury, aes(futhrt, mentill_num)) +
 ```
 
 As future threat increases by one unit, the odds of being classified as mentally ill increase by `r exp(0.34162)`, $z=3.78, p < 0.001$. It looks like the researcher is correct!
+
+```{r}
+summaryBy(futhrt ~ mentill, data=df_jury, FUN = function(x) { c(m = mean(x), s = sd(x)) })
+```
 
 ## Scenario 2
 
@@ -250,6 +276,9 @@ d$subject = factor(d$subject)
 d = gather(d, 'store', 'price', 2:5)
 names(d) = c('item', 'store', 'price')
 str(d)
+
+# Look at mean prices
+with(d, aggregate(price ~ store, data=d, FUN=mean))
 ```
 
 ```{r fig.width=10, fig.height=5, warning=F}
@@ -284,4 +313,21 @@ AIC(rs0, rs1)
 Interestingly, our analyses revealed that when looking at how item type influences price, allowing the regression intercept (i.e., mean price in this case) to vary by store did not significantly improve model fit beyond that of a general linear model with only fixed effects, $\chi^2 (1) = 1.24, p = 0.27$. Here, we're faced with a decision; should we stick with the simpler model, or include the random intercepts to keep our model "maximal" and since we know the observations from the same store are not independent. In our mixed effect model, the variance of the intercepts estimated for the different stores is quite small (var = 0.02, relative to a variance of 0.06 for the residual variance), and the intercepts range from 3.4 to 3.7. Thus, it appears as though the different stores don't have very different mean prices. Further, across stores, it looks as though the parameter estimates/slopes for our contrasts would be quite similar, even though we can't include random slopes for item in our model due to lack of data. Finally, we should interpret the fixed effects from our best model, following the same rules as writing up `lm()` results! We can use `{lmerTest}` to get approximations (Satterthwaite approximations by default) for dfs to calculate p-values.
 
 For getting some measure of $R^2$ for mixed effect models, check out [this post](http://jonlefcheck.net/2013/03/13/r2-for-linear-mixed-effects-models/).
+
+
+## Some extra code for within-subject standard error bars
+
+When you have repeated measures, often it will give you a better idea of significance by plotting with **within-subject** standard error bars; this is because the within-subject error bars are often smaller than the regular standard error bars, especially if your subjects have very different means (/intercepts). The code to generate within-subject SE bars was taken from the [R cookbook](http://www.cookbook-r.com/Graphs/Plotting_means_and_error_bars_(ggplot2)/). As stated on their page, "The graph of individual data shows that there is a consistent trend for the within-subjects variable condition, but this would not necessarily be revealed by taking the regular standard errors (or confidence intervals) for each group. The method in Morey (2008) and Cousineau (2005) essentially normalizes the data to remove the between-subject variability and calculates the variance from this normalized data".
+
+```{r}
+d = read.table('http://www.stanford.edu/class/psych252/data/ex4.txt')
+ds <- summarySEwithin(d, measurevar="Recall", 
+                      withinvars=c("Task", "Valence"), idvar="Subject")
+
+ggplot(ds, aes(x=Valence, y=Recall, fill=Task)) +
+    geom_bar(position=position_dodge(.9), colour="black", stat="identity") +
+    geom_errorbar(position=position_dodge(.9), width=.25, 
+                  aes(ymin=Recall-ci, ymax=Recall+ci)) +
+    scale_fill_brewer(palette="Set1")
+```
 
