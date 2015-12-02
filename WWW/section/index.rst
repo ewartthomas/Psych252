@@ -238,6 +238,14 @@ and then determine how to compare the models (e.g., likelihood ratio test compar
 Week 10
 ################
 
+Some example questions
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Given some example scenarios and questions, try to generate the appropriate test, run the relevant analyses, and write up the results.
+
+[`html <http://web.stanford.edu/class/psych252/section/example_problems.html>`_]
+[`Rmd <http://web.stanford.edu/class/psych252/section/example_problems.Rmd>`_]
+
 Exploring lmer with simulated data
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
