@@ -31,6 +31,7 @@ Here we have some practice deciding what type of statistical test to use in orde
 * Center continuous variables if necessary; contrast/effect code categorical variables too if including an interaction in your model if you want to interpret lower order effects as "main effects" controlling for the other variables in your model, rather than simple effects.
 * Test for interactions if possible
 * If you have a continuous IV, is the effect on your DV linear, or is there a higher order effect (e.g., polynomial)?
+* Compare models using `anova()` to justify which one is best!
 
 ------------------------------------------
 
