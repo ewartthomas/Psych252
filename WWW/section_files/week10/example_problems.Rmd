@@ -331,3 +331,45 @@ ggplot(ds, aes(x=Valence, y=Recall, fill=Task)) +
     scale_fill_brewer(palette="Set1")
 ```
 
+## Scenario 4
+
+### Question 6
+
+Here we have some data from a sleep study with 10 subjects (`ID`). The subjects came into the lab twice, a week apart, and were administered one of two drugs (`group`) to help them sleep on each visit (they got each drug over the course of the 2 visits). The researchers are interested in whether drug 2 is better than drug 1 at increases the number of hours of sleep the subjects get (`extra`). 
+
+**What test should we use to test this hypothesis?**
+
+Since we have multiple observations from each subject, we should use `lmer` to run a linear mixed effect model! We have a fixed effect of group/drug that is of interest, with a specific contrast we can test. Since this variable is a within-subjects variable, we can include a random intercept for subjects to see if that improves the model fit.
+
+```{r}
+ds = data.frame(sleep)
+str(ds)
+```
+
+Plot the data and look at summary stats:
+```{r}
+dsum <- summarySEwithin(ds, measurevar="extra", 
+                      withinvars=c("group"), idvar="ID")
+dsum
+
+ggplot(dsum, aes(x=group, y=extra, group=1)) +
+    geom_line() +
+    geom_errorbar(width=.1, aes(ymin=extra-ci, ymax=extra+ci)) +
+    geom_point(shape=21, size=3, fill="white")
+```
+
+```{r}
+contrasts(ds$group) = cbind(TwovOne=c(-1, 1))
+contrasts(ds$group)
+
+rs0 = lm(extra ~ group, data=ds)
+rs1 = lmer(extra ~ group + (1|ID), data=ds, REML=FALSE)
+anova(rs1, rs0)
+
+summary(rs1)
+
+# not enough obervations to test for random slopes... need more than 1 observation per subject per group!
+# rs2 = lmer(extra ~ group + (1 + group | ID), data=ds)
+```
+
+The researchers are correct, drug 2 significantly increases the amount of sleep the subjects get by 0.79 hours, relative to drug 1, $t(10) = 4.28, p < 0.01$ (drug 1 $M=0.75$, $SD = 0.87$; drug 2 $M = 2.33$, $SD = 0.87$). Thus, it appears that drug 2 is the more effective drug in inducing extra sleep, and perhaps should be the drug marketed. However, it is also interesting to note that it appears that drug 1 increases sleep above baseline! We could formally test this if we wanted...
