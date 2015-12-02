@@ -372,4 +372,6 @@ summary(rs1)
 # rs2 = lmer(extra ~ group + (1 + group | ID), data=ds)
 ```
 
-The researchers are correct, drug 2 significantly increases the amount of sleep the subjects get by 0.79 hours, relative to drug 1, $t(10) = 4.28, p < 0.01$ (drug 1 $M=0.75$, $SD = 0.87$; drug 2 $M = 2.33$, $SD = 0.87$). Thus, it appears that drug 2 is the more effective drug in inducing extra sleep, and perhaps should be the drug marketed. However, it is also interesting to note that it appears that drug 1 increases sleep above baseline! We could formally test this if we wanted...
+**Report results, including direction of the effect, the statistics, relevant model comparisons, and a brief explanation of what the results mean:**
+
+The researchers are correct, drug 2 significantly increases the amount of sleep the subjects get by 0.79 hours, relative to drug 1, $t(10) = 4.28, p < 0.01$ (drug 1 $M=0.75$, $SD = 0.87$; drug 2 $M = 2.33$, $SD = 0.87$). Here, our model includes a random intercept for subject, as this significantly improves the model compared to a linear model with only fixed effects, $\chi^2 (1) = 9.79, p < 0.01$. According to these results, it appears that drug 2 is the more effective drug in inducing extra sleep, and perhaps should be the drug marketed. However, it is also interesting to note that it appears that drug 1 increases sleep above baseline! We could formally test this if we wanted...
