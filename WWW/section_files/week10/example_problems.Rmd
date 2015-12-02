@@ -375,3 +375,94 @@ summary(rs1)
 **Report results, including direction of the effect, the statistics, relevant model comparisons, and a brief explanation of what the results mean:**
 
 The researchers are correct, drug 2 significantly increases the amount of sleep the subjects get by 0.79 hours, relative to drug 1, $t(10) = 4.28, p < 0.01$ (drug 1 $M=0.75$, $SD = 0.87$; drug 2 $M = 2.33$, $SD = 0.87$). Here, our model includes a random intercept for subject, as this significantly improves the model compared to a linear model with only fixed effects, $\chi^2 (1) = 9.79, p < 0.01$. According to these results, it appears that drug 2 is the more effective drug in inducing extra sleep, and perhaps should be the drug marketed. However, it is also interesting to note that it appears that drug 1 increases sleep above baseline! We could formally test this if we wanted...
+
+
+## Scenario 5
+
+### Question 7
+Here we have data from a study examining how different protein diets influence a chick's weight over time after birth. At birth, chicks (`Chick`) were randomly assigned to one of 4 protein diets (`Diet`), and then their weight (`weight`) was measured at birth and every second day thereafter until day 20 (`Time`). They were also measured on day 21. A group of researchers has a few different questions:
+
+1. Is the first diet (the current gold standard) worse from the others?
+2. Is the second diet (a variation on the 1st) different from the 3rd and 4th?
+3. Do the diets have linear effects over time, or are there any higher order trends?
+4. Is the effect of time on weight moderated by diet?
+
+**Which test should we use for these hypotheses?**
+
+Linear mixed effect models would be best (i.e., `lmer()`), since we have repeated measurements for the Chicks (over time), and our DV (weight) is continuous. Think about what contrasts we should make for `Diet`, and how we might want to code `Time` (linear, quadratic, centered, scaled, etc.).
+
+
+```{r}
+dw = data.frame(ChickWeight)
+str(dw)
+```
+
+Visualize group data
+```{r}
+ggplot(dw, aes(x=Time, y=weight, group=Diet, color=Diet)) +
+  geom_point() +
+  geom_smooth(method='loess')
+```
+
+Visualize random sample of chicks
+```{r}
+dl_sample = dw[dw$Chick %in% sample(unique(dw$Chick), size = 12),]
+
+ggplot(dl_sample, aes(x=Time, y=weight, color=Diet)) +
+  geom_point() +
+  geom_smooth(method='loess') + 
+  facet_wrap(~Chick, ncol=4)
+```
+
+Create some orthogonal contrasts to test the predictions:
+```{r}
+contrasts(dw$Diet) = cbind(OnevsOther = c(-3, 1, 1, 1),
+                           TwovsHigher = c(0, -2, 1, 1), 
+                           ThreevsFour = c(0, 0, -1, 1))
+contrasts(dw$Diet)
+```
+
+```{r}
+# Does adding random intercepts help?
+rs0 = lm(weight ~ Diet * scale(Time, scale=FALSE), data=dw)
+rs1 = lmer(weight ~ Diet * scale(Time, scale=FALSE) + (1|Chick), REML=FALSE, data=dw)
+anova(rs1, rs0)
+
+# Does adding in a random slope for Time help?
+rs1_reml = lmer(weight ~ Diet * scale(Time, scale=FALSE) + (1|Chick), REML=TRUE, data=dw)
+rs2_reml = lmer(weight ~ Diet * scale(Time, scale=F) + 
+                  (1 + scale(Time, scale=F)|Chick), REML=TRUE, data=dw)
+anova(rs1_reml, rs2_reml, refit=FALSE)
+
+# Does adding in a random slope for the interaction help?
+rs3_reml = lmer(weight ~ Diet * scale(Time, scale=F) + 
+                  (1 + scale(Time, scale=F) + scale(Time, scale=F):Diet|Chick), REML=TRUE, data=dw)
+anova(rs2_reml, rs3_reml, refit=FALSE)
+
+# Is the fixed effect interaction warranted?
+rs2_ml = lmer(weight ~ Diet * scale(Time, scale=F) + (1 + scale(Time, scale=F)|Chick), REML=FALSE, data=dw)
+rs4_ml = lmer(weight ~ Diet + scale(Time, scale=F) + (1 + scale(Time, scale=F)|Chick), REML=FALSE, data=dw)
+anova(rs2_ml, rs4_ml)
+
+# Are there any quadratic trends?
+rs5_ml = lmer(weight ~ Diet * poly(Time, 2) + 
+                (1 + scale(Time, scale=F)|Chick), REML=FALSE, data=dw)
+anova(rs2_ml, rs5_ml)
+
+# Should we also have a quadratic slope that varies by chick?
+rs5_reml = lmer(weight ~ Diet * poly(Time, 2) + 
+                (1 + scale(Time, scale=F)|Chick), REML=TRUE, data=dw)
+rs6_reml = lmer(weight ~ Diet * poly(Time, 2) + 
+                (1 + poly(Time, 2)|Chick), REML=TRUE, data=dw)
+anova(rs5_reml, rs6_reml, refit=FALSE)
+
+# Best model so far!
+summary(rs6_reml)
+ranef(rs6_reml)
+# coef(rs6_reml)
+```
+
+Practice reporting these results!
+
+
+
