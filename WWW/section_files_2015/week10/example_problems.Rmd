@@ -1,0 +1,468 @@
+---
+title: "Example questions"
+output:
+  html_document:
+    highlight: pygments
+    theme: flatly
+    toc: yes
+---
+
+Here we have some practice deciding what type of statistical test to use in order to answer various hypotheses. Over the course of the term, we've learned how to run a bunch of different tests, and now we'll put this toolkit to use!
+
+---------------------------------------------
+
+**Some helpful things to consider when deciding which tests to run**:
+
+* Is the **dependent variable (DV) continuous** or **categorical**?
+    + If categorical, we probably want to use either a [**chi-square test**](http://www.stanford.edu/class/psych252/cheatsheets/chisquare.html) (testing for goodness of fit [1-way], or a test of dependence [2-way]) or [**logistic regression**](http://web.stanford.edu/class/psych252/tutorials/Tutorial_LogisticRegression.html)
+    + If the DV is continuous, we're most likely going to be using a [**general linear model**](http://www.stanford.edu/class/psych252/section/Week3_Section.html#lm-bootcamp) (which encompasses $t$-tests, 1-way ANOVAs, regression, multiple regression), or a [**linear mixed effects model**](http://web.stanford.edu/class/psych252/section/Mixed_models_tutorial.html) (repeated measures ANOVA, a model with both fixed and random effects). 
+* Are there **repeated measures**/more than one observation from a single source (subject, classroom, etc.)?
+    + If so, you might want to use a mixed effects model with `lmer()` (continuous DV) or `glmer(..., family='binomial')` (binary categorical DV)!
+* Is there a **causal model** being tested? Does it warrant [**mediation**](http://web.stanford.edu/class/psych252/section/Section_week7.html#mediation-analysis) analyses (x causes y, but is mediated by z such that x -> z -> y)? [**Partial correlation**](http://web.stanford.edu/class/psych252/section/Section_week7.html#partial-correlation) (x independently causes y and z; y and z are not causally related)?
+ 
+------------------------------------------
+
+**Other suggestions**:
+
+* Plot your data!
+* Look at your data! Are there NA values to deal with? Do you need to reshape the dataframe into long form (e.g., for `lmer()`)?
+* Make sure variables are coded appropriately (e.g., factors)
+* Generate a hypothesis before making your contrasts; rely on your plots as well!
+* Center continuous variables if necessary; contrast/effect code categorical variables too if including an interaction in your model if you want to interpret lower order effects as "main effects" controlling for the other variables in your model, rather than simple effects.
+* Test for interactions if possible
+* If you have a continuous IV, is the effect on your DV linear, or is there a higher order effect (e.g., polynomial)?
+* Compare models using `anova()` to justify which one is best!
+
+------------------------------------------
+
+```{r, echo=FALSE, message=FALSE}
+library(ggplot2)
+theme_set(theme_bw(base_size = 18))
+library(GGally)
+library(tidyr)
+library(dplyr)
+library(lme4)
+library(lmerTest)
+
+plot_dataframe <- function(data, color_var=NULL, cols=NULL){
+  if(missing(cols)){
+    cols=c(1:length(data))
+    }
+  
+  if(missing(color_var)){
+    ggpairs(data[, cols], 
+            upper = list(continuous = "smooth", 
+                         combo = "box"),
+            lower = list(continuous = "cor", 
+                         combo = "facethist"))
+    }else{
+      ggpairs(data[, cols], 
+              upper = list(continuous = "smooth", 
+                           combo = "box"),
+              lower = list(continuous = "cor", 
+                           combo = "facethist"),
+              colour = color_var)
+      }
+  }
+```
+
+## Scenario 1
+
+We want to know whether the perception that jury members hold of a defendant might influence the outcome of a case (i.e. whether individual jurors vote guilty or not guilty). To study this the experimenter had participants read a case outline (each outline was taken from a different defendant in the county) and then answer questions about the case. The case outline states the main facts of a robbery, including eye-witness testimony about the identity and behavior of the robber. Participants are asked:
+
+* Do you think that the defendant is guilty? (`guiltcat`: 1 = Definitely Not Guilty, 2 = Probably Not Guilty, 3 = Probably Guilty, or 4 = Definitely Guilty)
+* On the basis of the evidence, do you think that the defendant is mentally ill? (`mentill`: 1 = Yes or 0 = No)
+* Using a 0 (Very Low) to 10 (Very High) scale, state how much you think the defendant is a future threat (`futhrt`) to society.
+
+
+```{r}
+df_jury = read.csv('http://www.stanford.edu/class/psych252/data/mentillness.csv')
+str(df_jury)
+df_jury = df_jury %>%
+  mutate(mentill=factor(mentill,levels=c(0,1),labels=c("No","Yes")))
+df_jury = df_jury[,c('guiltcat', 'futhrt', 'mentill')]
+plot_dataframe(df_jury, color_var = 'mentill')
+```
+
+
+### Question 1
+Before we answer the main research question, the researchers are curious if the distribution of defendants deemed mentally ill is the same as last year. The proportions last year were no: .75, yes: .25.
+
+**What type of test would we use to answer this question?**
+
+A **chi-square goodness of fit test** (1-way)! We want to know whether the data is consistent with the specified distribution from last year (.75, .25), and we can use the chi-square test to figure this out!
+
+```{r}
+addmargins(table(df_jury$mentill))
+chisqres = chisq.test(table(df_jury$mentill), p = c(.75, .25))
+chisqres
+
+chisqres$expected
+```
+
+No, the observed counts of defendents mental illness status was significantly different from the distribution of last year, $\chi^2$ (N=`r length(df_jury$mentill)`, df=1) = 80, p < 0.001. This year fewer defendants were deemed not mentally ill, and more were deemed mentally ill; specifically, this year the proportions were no:.5, yes:.5, instead of no:.75, yes:.25. 
+
+
+### Question 2
+
+The researchers' believe that a defendant's perceived future threat and mental illness status may influence the jury's perception of guilt. 
+
+**What type of test should we use to test this question?**
+
+We should use **multiple regression** using `lm` (a general linear model). We have a continuous dependent variable (`guiltcat` -- note that even though we have category in the name, it's a 4 point scale!), and both a categorical and continuous independent variable. We probably will want to contrast code the categorical IV to begin with, and let's center our continuous IV so we can interpret the other terms in our model.  
+
+```{r}
+# Create contast for mental illness
+contrasts(df_jury$mentill) = cbind(NovsYes = c(1, -1))
+contrasts(df_jury$mentill)
+
+# Look at main effects
+rs1 = lm(guiltcat ~ mentill, data=df_jury)
+summary(rs1)
+
+rs2 = lm(guiltcat ~ scale(futhrt, scale=F), data=df_jury)
+summary(rs2)
+
+# Explore additive and interactive models
+rs3a = lm(guiltcat ~ mentill + scale(futhrt, scale=F), data=df_jury)
+
+# Some model comparisons to see if adding both terms is warranted
+anova(rs1, rs3a)
+anova(rs2, rs3a)
+
+rs3b = lm(guiltcat ~ mentill * scale(futhrt, scale=F), data = df_jury)
+anova(rs3a, rs3b)
+
+summary(rs3b)
+
+
+# Explore interaction
+contrasts(df_jury$mentill) = cbind(No=c(0, 1))
+contrasts(df_jury$mentill)
+rs4 = lm(guiltcat ~ mentill * scale(futhrt, scale=F), data=df_jury)
+summary(rs4)
+
+contrasts(df_jury$mentill) = cbind(Yes=c(1, 0))
+contrasts(df_jury$mentill)
+rs5 = lm(guiltcat ~ mentill * scale(futhrt, scale=F), data=df_jury)
+summary(rs5)
+```
+
+Some stats:
+```{r}
+library(doBy)
+summaryBy(guiltcat~mentill, data = df_jury, 
+          FUN = function(x) { c(m = mean(x), s = sd(x)) } )
+```
+
+Plot with standard error bars (as you might do in a paper):
+```{r}
+# Load in some helper functions
+source('http://www.stanford.edu/class/psych252/data/Plotting_means_errorbars.R')
+
+df_summary = summarySE(df_jury, measurevar='guiltcat', groupvars=c('mentill'))
+df_summary
+
+ggplot(df_summary, aes(x=mentill, y=guiltcat, group=1)) + 
+    geom_errorbar(aes(ymin=guiltcat-se, ymax=guiltcat+se), colour="black", width=.1) +
+    geom_line() +
+    geom_point(size=5, shape=21, fill="white") # 21 is filled circle
+```
+
+**Write up, including (1) the statistics (note the reporting of descriptive stats!), (2) the direction of the effect(s), and (3) a quick explanation about what the stats mean:**
+
+Here, we can see that there is a main effect of mental illness on guilt such that those perceived as *not* mentally ill have ratings about 1.6 points higher than on the guilt scale, $t(238) = 15.09, p < 0.001$ (not mentally ill $M = 3.28$, $SD = 0.82$; mentally ill $M = 1.73$, $SD = 0.78$). Perhaps mentally ill people seem less responsible for their crimes, and thus have reduced guilt status. Without controlling for mental illness, perceived future threat does not significantly influence guilt, $t(238) = -0.99, p = 0.216$. 
+
+However, and most importantly, the model that best explains the data includes an interaction between mental illness and future threat (adjusted $R^2 = 0.51, F(3, 236) = 85.18, p < 0.001$). This interactive model does a significantly better job fitting the data than an additive model, $F(1,$ `r nrow(df_jury)-(2+1+1)` $) = 8.54, p < 0.01$. Here we observe a significant interaction between perceived future threat and mental illness on guilt ratings, $t(236)=2.92, p < 0.01$. Specifically, for those perceived as not mentally ill, we observed a significant simple effect of future threat on guilt, such that as future threat increases by one unit, guilt increases by 0.19 points, $t(236) = 3.90, p < 0.001$. However, for those perceived as mentally ill, there is not a significant simple effect of future threat on guilt, $b=-0.006, t(236) = -0.126, p = 0.90$. This suggests that the jury believes that since non-mentally ill people can control their actions, the more of a future threat they are to society, the guiltier they should be. However, for mentally ill people, since their actions might be out of their control, even if they might be a greater future threat to society this future threat shouldn't influence their current guilt. 
+
+Further, this interaction is qualified by significant lower order effects of mental illness and future threat; controlling for future threat, mental illness .... [here you would continue writing up lower order results! while the interaction is where the meat of the analysis is at, it's often preferable to report the full results].
+
+```{r}
+ggplot(df_jury, aes(futhrt, guiltcat, color=mentill, fill=mentill)) +
+  geom_point(position=position_jitter(height=0.05,width=0.05), alpha=.5) +
+  geom_smooth(method='lm')
+```
+
+
+
+### Question 3
+
+Another research is curious if perceived future threat actually influences whether a defendant is classified as mentally ill or not. The researcher believes that perhaps people are more likely to be considered as mentally ill if they commit horrible crimes that make them a large future threat to society. 
+
+**What type of test would we use to answer this question?**
+
+**Logistic regression** works here, since we have a categorical dependent variable, and a continuous IV. We only have one observation from each person, so we only have fixed effects (no random effects to consider) and we can just use `glm(..., family='binomial')`, rather than `glmer(..., family='binomial')`.
+
+```{r}
+summary(glm(mentill ~ futhrt, data=df_jury, family='binomial'))
+
+df_jury$mentill_num = as.numeric(df_jury$mentill) - 1
+ggplot(df_jury, aes(futhrt, mentill_num)) +
+  geom_point(position=position_jitter(heigh=.05), alpha=.5) + 
+  stat_smooth(method='glm', family='binomial')
+```
+
+As future threat increases by one unit, the odds of being classified as mentally ill increase by `r exp(0.34162)`, $z=3.78, p < 0.001$. It looks like the researcher is correct!
+
+```{r}
+summaryBy(futhrt ~ mentill, data=df_jury, FUN = function(x) { c(m = mean(x), s = sd(x)) })
+```
+
+## Scenario 2
+
+### Question 4
+
+A group of researchers has data from 50 states, and they hypothesize a causal model that low high school graduation rates lead to illiteracy, and illiteracy reduces income. 
+
+How can we test this hypothesis?
+
+We can use **mediation**! Here, it might be the case that low high school graduation rates (`x`) lead to reductions in income (`y`), or this effect may be mediated by illiteracy (our mediator variable, `z`), as predicted. 
+
+```{r}
+df = data.frame(state.x77)
+str(df)
+```
+
+```{r}
+model1 = lm(Income ~ HS.Grad, data=df) #c
+c_val = model1$coefficients['HS.Grad']; c_val
+
+model2 = lm(Illiteracy ~ HS.Grad, data=df) #a
+a_val = model2$coefficients['HS.Grad']
+se_a_val = summary(model2)$coefficients[2,2] # get SE
+summary(model2)
+
+model3 = lm(Income ~ HS.Grad + Illiteracy, data=df) #b and c'
+b_val = model3$coefficients['Illiteracy']
+cprime_val = model3$coefficients['HS.Grad']; cprime_val
+se_b_val = summary(model3)$coefficients[3,2]
+summary(model3)
+
+se_ab <- sqrt(b_val^2*
+                se_a_val^2+a_val^2
+              *se_b_val^2+se_a_val^2*se_b_val^2)
+se_ab # standard error of a*b
+
+sobel_stat = a_val*b_val/se_ab; sobel_stat
+
+p_s_ab <- pnorm(sobel_stat, lower.tail=F)
+p_s_ab # p of ratio of a*b over its s.e.
+```
+
+The relationship between HS graduation rates and income was not mediated by illiteracy. While the regression coefficient between HS graduation rates and illiteracy was statistically significant (`r round(a_val,2)`, $t(48)=-6.041, p < 0.001$), the regression coefficient between illiteracy and income, when controlling for HS graduation rates, was not significant (`r round(b_val,2)`, $t(47)= -0.344, p=0.73$). The indirect effect was $(-0.05)(-52.64) = 2.61$.	We tested the significance of this indirect effect using the Sobel test, and found that the mediation was not significant, $z=0.34, p = 0.37$. It appears that HS graduation rates are a good indicator of income, perhaps because just the high school degree boosts income.
+
+## Scenario 3
+
+### Question 5
+
+Here we have data about the price of different items sold in the supermarket. The researchers collected data from 4 different stores, and within each store collected information about the prices of different items. Specifically, we are interested in whether non-food products are more expensive than food products. Then, within non-food products, we want to know if aspirin is more expensive than laundry detergent. Within food products, we want to know if potatoes are more expensive than lettuce.
+
+**What type of test would we use to test this hypothesis?**
+
+We could use a **linear mixed effects model**! We're trying to predict a continuous DV (price), so we want to use a linear model (not logistic regression), and we're using a categorical IV, so we'll want to make sure we choose the appropriate contrast coding for our question. Secondly, we note that there are **repeated measurements** from the same stores; that is, our observations are not all independent -- some of the items came from the same store, and thus might have similar prices.
+
+For our mixed effects model, our fixed effect is the item type; we'll create contrast codes to test the specific predictions from our hypothesis. We also can include a random effect (only an intercept in this case) for store; specifically, the average price might differ across stores, if one store is in an area with a lower cost of living, etc. 
+
+
+```{r}
+d = read.table('http://ww2.coastal.edu/kingw/statistics/R-tutorials/text/groceries.txt', header=T)
+str(d)
+d = d[d$subject %in% c('aspirin', 'laundry.detergent', 'lettuce', 'potatoes'),]
+d$subject = factor(d$subject)
+```
+
+
+```{r}
+d = gather(d, 'store', 'price', 2:5)
+names(d) = c('item', 'store', 'price')
+str(d)
+
+# Look at mean prices
+with(d, aggregate(price ~ store, data=d, FUN=mean))
+```
+
+```{r fig.width=10, fig.height=5, warning=F}
+p = ggplot(d, aes(x=item, y=price, color=item)) + 
+    geom_smooth(aes(group=1), method='loess', color='gray') +
+    geom_point(size=4) + 
+    facet_wrap(~store, ncol = 2) +
+  theme(axis.text.x = element_text(angle = 45, hjust=1)) 
+p
+```
+
+```{r}
+contrasts(d$item)
+contrasts(d$item) = cbind(OthervsFood=c(1, 1, -1, -1), 
+                          AspirinvLaundry=c(-1, 1, 0, 0),
+                          LettucevPotatoes=c(0, 0, -1, 1))
+# check to make sure contrasts are orthogonal!
+contrasts(d$item)
+
+rs0 = lm(price ~ item, data=d)
+
+rs1 = lmer(price ~ item + (1| store), data=d, REML=FALSE)
+anova(rs1, rs0)
+summary(rs1)
+coef(rs1)$store['(Intercept)']
+summary(rs0)
+AIC(rs0, rs1)
+
+# rs2 = lmer(price ~ item + (1 + item | store), data=d)
+```
+
+Interestingly, our analyses revealed that when looking at how item type influences price, allowing the regression intercept (i.e., mean price in this case) to vary by store did not significantly improve model fit beyond that of a general linear model with only fixed effects, $\chi^2 (1) = 1.24, p = 0.27$. Here, we're faced with a decision; should we stick with the simpler model, or include the random intercepts to keep our model "maximal" and since we know the observations from the same store are not independent. In our mixed effect model, the variance of the intercepts estimated for the different stores is quite small (var = 0.02, relative to a variance of 0.06 for the residual variance), and the intercepts range from 3.4 to 3.7. Thus, it appears as though the different stores don't have very different mean prices. Further, across stores, it looks as though the parameter estimates/slopes for our contrasts would be quite similar, even though we can't include random slopes for item in our model due to lack of data. Finally, we should interpret the fixed effects from our best model, following the same rules as writing up `lm()` results! We can use `{lmerTest}` to get approximations (Satterthwaite approximations by default) for dfs to calculate p-values.
+
+For getting some measure of $R^2$ for mixed effect models, check out [this post](http://jonlefcheck.net/2013/03/13/r2-for-linear-mixed-effects-models/).
+
+
+## Some extra code for within-subject standard error bars
+
+When you have repeated measures, often it will give you a better idea of significance by plotting with **within-subject** standard error bars; this is because the within-subject error bars are often smaller than the regular standard error bars, especially if your subjects have very different means (/intercepts). The code to generate within-subject SE bars was taken from the [R cookbook](http://www.cookbook-r.com/Graphs/Plotting_means_and_error_bars_(ggplot2)/). As stated on their page, "The graph of individual data shows that there is a consistent trend for the within-subjects variable condition, but this would not necessarily be revealed by taking the regular standard errors (or confidence intervals) for each group. The method in Morey (2008) and Cousineau (2005) essentially normalizes the data to remove the between-subject variability and calculates the variance from this normalized data".
+
+```{r}
+d = read.table('http://www.stanford.edu/class/psych252/data/ex4.txt')
+ds <- summarySEwithin(d, measurevar="Recall", 
+                      withinvars=c("Task", "Valence"), idvar="Subject")
+
+ggplot(ds, aes(x=Valence, y=Recall, fill=Task)) +
+    geom_bar(position=position_dodge(.9), colour="black", stat="identity") +
+    geom_errorbar(position=position_dodge(.9), width=.25, 
+                  aes(ymin=Recall-ci, ymax=Recall+ci)) +
+    scale_fill_brewer(palette="Set1")
+```
+
+## Scenario 4
+
+### Question 6
+
+Here we have some data from a sleep study with 10 subjects (`ID`). The subjects came into the lab twice, a week apart, and were administered one of two drugs (`group`) to help them sleep on each visit (they got each drug over the course of the 2 visits). The researchers are interested in whether drug 2 is better than drug 1 at increases the number of hours of sleep the subjects get (`extra`). 
+
+**What test should we use to test this hypothesis?**
+
+Since we have multiple observations from each subject, we should use `lmer` to run a linear mixed effect model! We have a fixed effect of group/drug that is of interest, with a specific contrast we can test. Since this variable is a within-subjects variable, we can include a random intercept for subjects to see if that improves the model fit.
+
+```{r}
+ds = data.frame(sleep)
+str(ds)
+```
+
+Plot the data and look at summary stats:
+```{r}
+dsum <- summarySEwithin(ds, measurevar="extra", 
+                      withinvars=c("group"), idvar="ID")
+dsum
+
+ggplot(dsum, aes(x=group, y=extra, group=1)) +
+    geom_line() +
+    geom_errorbar(width=.1, aes(ymin=extra-ci, ymax=extra+ci)) +
+    geom_point(shape=21, size=3, fill="white")
+```
+
+```{r}
+contrasts(ds$group) = cbind(TwovOne=c(-1, 1))
+contrasts(ds$group)
+
+rs0 = lm(extra ~ group, data=ds)
+rs1 = lmer(extra ~ group + (1|ID), data=ds, REML=FALSE)
+anova(rs1, rs0)
+
+summary(rs1)
+
+# not enough obervations to test for random slopes... need more than 1 observation per subject per group!
+# rs2 = lmer(extra ~ group + (1 + group | ID), data=ds)
+```
+
+**Report results, including direction of the effect, the statistics, relevant model comparisons, and a brief explanation of what the results mean:**
+
+The researchers are correct, drug 2 significantly increases the amount of sleep the subjects get by 0.79 hours, relative to drug 1, $t(10) = 4.28, p < 0.01$ (drug 1 $M=0.75$, $SD = 0.87$; drug 2 $M = 2.33$, $SD = 0.87$). Here, our model includes a random intercept for subject, as this significantly improves the model compared to a linear model with only fixed effects, $\chi^2 (1) = 9.79, p < 0.01$. According to these results, it appears that drug 2 is the more effective drug in inducing extra sleep, and perhaps should be the drug marketed. However, it is also interesting to note that it appears that drug 1 increases sleep above baseline! We could formally test this if we wanted...
+
+
+## Scenario 5
+
+### Question 7
+Here we have data from a study examining how different protein diets influence a chick's weight over time after birth. At birth, chicks (`Chick`) were randomly assigned to one of 4 protein diets (`Diet`), and then their weight (`weight`) was measured at birth and every second day thereafter until day 20 (`Time`). They were also measured on day 21. A group of researchers has a few different questions:
+
+1. Is the first diet (the current gold standard) worse from the others?
+2. Is the second diet (a variation on the 1st) different from the 3rd and 4th?
+3. Do the diets have linear effects over time, or are there any higher order trends?
+4. Is the effect of time on weight moderated by diet?
+
+**Which test should we use for these hypotheses?**
+
+Linear mixed effect models would be best (i.e., `lmer()`), since we have repeated measurements for the Chicks (over time), and our DV (weight) is continuous. Think about what contrasts we should make for `Diet`, and how we might want to code `Time` (linear, quadratic, centered, scaled, etc.).
+
+
+```{r}
+dw = data.frame(ChickWeight)
+str(dw)
+```
+
+Visualize group data
+```{r}
+ggplot(dw, aes(x=Time, y=weight, group=Diet, color=Diet)) +
+  geom_point() +
+  geom_smooth(method='loess')
+```
+
+Visualize random sample of chicks
+```{r}
+dl_sample = dw[dw$Chick %in% sample(unique(dw$Chick), size = 12),]
+
+ggplot(dl_sample, aes(x=Time, y=weight, color=Diet)) +
+  geom_point() +
+  geom_smooth(method='loess') + 
+  facet_wrap(~Chick, ncol=4)
+```
+
+Create some orthogonal contrasts to test the predictions:
+```{r}
+contrasts(dw$Diet) = cbind(OnevsOther = c(-3, 1, 1, 1),
+                           TwovsHigher = c(0, -2, 1, 1), 
+                           ThreevsFour = c(0, 0, -1, 1))
+contrasts(dw$Diet)
+```
+
+```{r}
+# Does adding random intercepts help?
+rs0 = lm(weight ~ Diet * scale(Time, scale=FALSE), data=dw)
+rs1 = lmer(weight ~ Diet * scale(Time, scale=FALSE) + (1|Chick), REML=FALSE, data=dw)
+anova(rs1, rs0)
+
+# Does adding in a random slope for Time help?
+rs1_reml = lmer(weight ~ Diet * scale(Time, scale=FALSE) + (1|Chick), REML=TRUE, data=dw)
+rs2_reml = lmer(weight ~ Diet * scale(Time, scale=F) + 
+                  (1 + scale(Time, scale=F)|Chick), REML=TRUE, data=dw)
+anova(rs1_reml, rs2_reml, refit=FALSE)
+
+# Does adding in a random slope for the interaction help?
+rs3_reml = lmer(weight ~ Diet * scale(Time, scale=F) + 
+                  (1 + scale(Time, scale=F) + scale(Time, scale=F):Diet|Chick), REML=TRUE, data=dw)
+anova(rs2_reml, rs3_reml, refit=FALSE)
+
+# Is the fixed effect interaction warranted?
+rs2_ml = lmer(weight ~ Diet * scale(Time, scale=F) + (1 + scale(Time, scale=F)|Chick), REML=FALSE, data=dw)
+rs4_ml = lmer(weight ~ Diet + scale(Time, scale=F) + (1 + scale(Time, scale=F)|Chick), REML=FALSE, data=dw)
+anova(rs2_ml, rs4_ml)
+
+# Are there any quadratic trends?
+rs5_ml = lmer(weight ~ Diet * poly(Time, 2) + 
+                (1 + scale(Time, scale=F)|Chick), REML=FALSE, data=dw)
+anova(rs2_ml, rs5_ml)
+
+# Should we also have a quadratic slope that varies by chick?
+rs5_reml = lmer(weight ~ Diet * poly(Time, 2) + 
+                (1 + scale(Time, scale=F)|Chick), REML=TRUE, data=dw)
+rs6_reml = lmer(weight ~ Diet * poly(Time, 2) + 
+                (1 + poly(Time, 2)|Chick), REML=TRUE, data=dw)
+anova(rs5_reml, rs6_reml, refit=FALSE)
+
+# Best model so far!
+summary(rs6_reml)
+ranef(rs6_reml)
+# coef(rs6_reml)
+```
+
+Practice reporting these results!
+
+
+

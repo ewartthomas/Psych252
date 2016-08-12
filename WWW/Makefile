@@ -158,6 +158,7 @@ upload:
 	cp tutorial_files/* _build/html/tutorials/
 	cp section_files/* _build/html/section/
 	cp section_files_2013/* _build/html/section_2013/
+	cp section_files_2015/*/* _build/html/section_2015/
 	cp slides_files/* _build/html/slides/
 	cp plot_files/* _build/html/plots/
 	cp cheatsheet_files/* _build/html/cheatsheets/

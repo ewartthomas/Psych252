@@ -1,0 +1,92 @@
+---
+title: "Jane Doe, Homework 1"
+output:
+  html_document:
+    highlight: pygments
+    theme: flatly
+    toc: yes
+---
+
+Load packages you'll be using throughout the HW
+
+```{r}
+library(ggplot2)
+```
+
+
+Question 9
+-----------------------------------------
+
+### Q9 Part A
+
+First, we calculated the mean of the non-normal distribution `D0`. 
+  
+```{r 9a_D0 mean}
+x0 = c(1:3, 5, 7, 9)
+p0 = c(.2, .4, .24, .10, .05, .01)
+mu0 = sum(x0 * p0) / sum(p0)
+print(mu0)
+```
+
+The mean of `D0` is 2.66.
+
+**Instructor's Note:** You could also write your narrative text as follows, which will ensure that the number you report is always in sync with the code you wrote. This is a bit more complex, but recommended:
+
+The mean of `D0` is `r mu0`.
+
+
+### Q9 Part B 
+
+Next, we drew a sample of 1000 observations from the skewed distribution `x0`.
+  
+```{r 9b_x0_sample}
+o1 = sample(x0, 1000, replace=T, prob = p0)
+```
+
+Then, we made a histogram of `x0` along with the estimated probability density function.
+
+```{r 9b_histogram, fig.width=7, fig.height=6}
+df = data.frame(observations=o1)
+
+ggplot(df, aes(x=observations)) +
+  geom_histogram(aes(y=..density..), #..density.. normalizes the y axis to the density (i.e. counts / total)
+                 color='black',
+                 fill='white',
+                 binwidth=1,
+                 breaks=c(0.5:9.5)) + # see ?geom_histogram for details
+  geom_density(alpha=0.2,
+               fill='orange',
+               adjust=3) +
+  theme_bw()
+
+## If you prefer plotting without ggplot, you can use this code:
+
+# rs1 = hist(o1, prob=T, main='Sampling distribution of x0, 1000 Samples')
+# lines(density(o1, adjust=3))
+```
+
+
+Question 10: (example stats writeup)
+-----------------------------------------
+
+Here we have some data (`x0`) about the demographics of participants in our experiment. We also have some data (`p0`) about the distribution of races in the United States. 
+
+We want to know whether the distribution of races in our data is consistent with the specified US distribution.
+  
+```{r 10_create_data}
+x0 = c(white=273, black=40, asian=10, other=5)
+p0 = c(white=.77, black=.13, asian=.054, other=0.046)
+
+# calculate proportions in sample
+x0/sum(x0)
+```
+
+#### Conduct a chi-squared test
+```{r}
+rs = chisq.test(x0, p=p0)
+rs
+
+rs$expected
+```
+
+Running a $X^2$ goodness-of-fit test, we see that we reject the null hypothesis that the distribution of races in our data is consistent with the US distribution, $X^2$ (`r rs$parameter`, N=`r sum(rs$observed)`) =`r rs$statistic`, p = `r rs$p.value`. Thus, it appears that our data is not consistent with the US distribution. Specifically, we have more white participants than we would have expected (273 (~83%), relative to 253 if 77% of our participants were white), and we have fewer asian and other participants than would have been expected (approximately 10 fewer, off by about 3%). Perhaps we sampled from a college that had a larger proportion of white students relative to the US population, and as a result our sample was biased.

@@ -1,0 +1,176 @@
+---
+title: "Interpreting lm output"
+output: html_document
+---
+
+Load in the data
+```{r}
+library(ggplot2)
+theme_set(theme_bw(base_size = 18)) 
+library(scatterplot3d)
+library(effects)
+library(tidyr)
+
+xphil = read.csv('http://web.stanford.edu/~kweisman/XPhil/xphil_demo.csv')
+
+xphil = subset(xphil, Religion2 != "NA")
+xphil$Cond = factor(xphil$Condition, labels=c('C1', 'C2'))
+xphil$Relig = factor(xphil$Religion2, labels = c('JC', 'None'))
+
+contrasts(xphil$Relig) = c(1,0)
+```
+
+## Single regression
+
+### Continuous predictor
+```{r}
+r1 = lm(NeuronRepl ~ EnjoyScifi, data = xphil); summary(r1)
+
+plot(allEffects(r1))
+```
+
+### Categorical predictor
+```{r}
+r2a = lm(NeuronRepl ~ Gender, data = xphil); summary(r2a)
+plot(allEffects(r2a))
+```
+
+```{r}
+r2b = lm(NeuronRepl ~ Relig, data = xphil); summary(r2b)
+plot(allEffects(r2b))
+```
+
+```{r}
+r2c = lm(NeuronRepl ~ Cond, data = xphil); summary(r2c)
+plot(allEffects(r2c))
+```
+
+## Multiple regression
+
+### Additive models
+
+```{r}
+r3a = lm(NeuronRepl ~ EnjoyScifi + Teleporter, data = xphil); summary(r3a)
+plot(allEffects(r3a))
+```
+
+```{r}
+r3a = lm(NeuronRepl ~ Cond + Relig, data = xphil); summary(r3a)
+plot(allEffects(r3a))
+
+library(doBy)
+summaryBy(NeuronRepl ~ Cond + Relig, data = xphil, FUN = mean)
+```
+
+```{r}
+r3c = lm(NeuronRepl ~ Relig + EnjoyScifi, data = xphil); summary(r3c)
+plot(allEffects(r3c))
+
+# Plot from the coefficients
+coefsc = coefficients(r3c); coefsc
+
+# calculate estimates
+dat = data.frame(EnjoyScifi = xphil$EnjoyScifi)
+dat$rNone = coefsc[[1]] + coefsc[[2]]*0 + coefsc[[3]]*dat$EnjoyScifi
+dat$rJC = coefsc[[1]] + coefsc[[2]]*1 + coefsc[[3]]*dat$EnjoyScifi
+
+# plot
+dat_long = gather(dat, 'relig', 'estimate', 2:3)
+ggplot(data=dat_long, aes(x=EnjoyScifi, y=estimate, colour=relig)) + 
+  geom_line() + geom_vline(x=0, linetype='longdash')
+```
+
+```{r}
+r4a = lm(NeuronRepl ~ poly(EnjoyScifi, 2), data = xphil); summary(r4a)
+plot(allEffects(r4a))
+
+head(r4a$model)
+head(scale(xphil$EnjoyScifi))
+
+# Plot from the coefficients
+coefsc = coefficients(r4a); coefsc
+
+# calculate estimates
+model_out = r4a$model
+linear = model_out[,'poly(EnjoyScifi, 2)'][,1]
+quadratic = model_out[,'poly(EnjoyScifi, 2)'][,2]
+dat = data.frame(EnjoyScifi = xphil$EnjoyScifi)
+dat$predicted = coefsc[[1]] + coefsc[[2]]*linear + coefsc[[3]]*quadratic
+
+# cor(linear, xphil$EnjoyScifi)
+# cor(linear, quadratic)
+# cor(quadratic, xphil$EnjoyScifi^2)
+
+# plot
+ggplot(data=dat, aes(x=EnjoyScifi, y=predicted)) + 
+  geom_line() + geom_vline(x=0, linetype='longdash')
+```
+
+
+### Interactive models
+
+```{r}
+r5a = lm(NeuronRepl ~ EnjoyScifi * Cond, data = xphil); summary(r5a)
+plot(allEffects(r5a))
+
+# Plot from the coefficients
+coefsc = coefficients(r5a); coefsc
+
+# calculate estimates
+dat = data.frame(EnjoyScifi = xphil$EnjoyScifi)
+dat$c1 = coefsc[[1]] + coefsc[[3]]*0 + coefsc[[2]]*dat$EnjoyScifi + coefsc[[4]]*dat$EnjoyScifi*0
+dat$c2 = coefsc[[1]] + coefsc[[3]]*1 + coefsc[[2]]*dat$EnjoyScifi + coefsc[[4]]*dat$EnjoyScifi*1
+
+# plot
+dat_long = gather(dat, 'cond', 'estimate', 2:3)
+ggplot(data=dat_long, aes(x=EnjoyScifi, y=estimate, colour=cond)) + 
+  geom_line() + geom_vline(x=0, linetype='longdash')
+```
+
+```{r}
+r5b = lm(NeuronRepl ~ EnjoyScifi * Relig, data = xphil); summary(r5b)
+plot(allEffects(r5b))
+
+# Plot from the coefficients
+coefsc = coefficients(r5b); coefsc
+
+# calculate estimates
+dat = data.frame(EnjoyScifi = xphil$EnjoyScifi)
+dat$rNone = coefsc[[1]] + coefsc[[3]]*0 + coefsc[[2]]*dat$EnjoyScifi + coefsc[[4]]*dat$EnjoyScifi*0
+dat$rJC = coefsc[[1]] + coefsc[[3]]*1 + coefsc[[2]]*dat$EnjoyScifi + coefsc[[4]]*dat$EnjoyScifi*1
+
+# plot
+dat_long = gather(dat, 'relig', 'estimate', 2:3)
+ggplot(data=dat_long, aes(x=EnjoyScifi, y=estimate, colour=relig)) + 
+  geom_line() + geom_vline(x=0, linetype='longdash')
+```
+
+```{r}
+r5c = lm(NeuronRepl ~ poly(EnjoyScifi,2) * Relig, data = xphil); summary(r5c)
+plot(allEffects(r5c))
+
+ggplot(data=xphil, aes(x=EnjoyScifi, y=NeuronRepl, colour=Relig)) +
+  geom_point() + geom_smooth(method='lm', formula =y ~ poly(x, 2))
+```
+
+```{r}
+r6 = lm(NeuronRepl ~ Cond * Relig, data = xphil); summary(r6)
+plot(allEffects(r6))
+
+# Plot from the coefficients
+coefsc = coefficients(r6); coefsc
+
+# calculate estimates
+C1None = coefsc[[1]] + coefsc[[2]]*0 + coefsc[[3]]*0 + coefsc[[4]]*0*0; C1None
+C2None = coefsc[[1]] + coefsc[[2]]*1 + coefsc[[3]]*0 + coefsc[[4]]*1*0; C2None
+C1JC = coefsc[[1]] + coefsc[[2]]*0 + coefsc[[3]]*1 + coefsc[[4]]*0*1; C1JC
+C2JC = coefsc[[1]] + coefsc[[2]]*1 + coefsc[[3]]*1 + coefsc[[4]]*1*1; C2JC
+
+summaryBy(NeuronRepl ~ Cond + Relig, data = xphil, FUN = mean)
+```
+
+
+```{r}
+r7 = lm(NeuronRepl ~ EnjoyScifi * ThinkOften, data = xphil); summary(r7) 
+plot(allEffects(r7))
+```

@@ -1,0 +1,78 @@
+---
+title: "Example model comparisons"
+output:
+  html_document:
+    highlight: pygments
+    theme: flatly
+    toc: yes
+---
+```{r}
+library(ggplot2)
+theme_set(theme_bw(base_size = 18))
+library(lme4)
+library(lmerTest)
+```
+
+```{r}
+d = read.table('http://www.stanford.edu/class/psych252/data/ex4.txt')
+str(d)
+```
+
+```{r fig.width=12, fig.height=4}
+ggplot(data=d, aes(x=Valence, y=Recall, group=Task, colour=Task)) +
+  geom_point() + geom_smooth(method='lm', se=F) +
+  facet_wrap(~Subject, ncol = 5, scales = "fixed")
+```
+
+```{r}
+contrasts(d$Valence) = cbind(arousingVSneutral=c(1, -2, 1),
+                             negVSpos=c(1, 0, -1)); contrasts(d$Valence)
+contrasts(d$Task) = cbind(cuedVSfree=c(1, -1)); contrasts(d$Task)
+```
+
+## Example 1
+```{r}
+model1.1 = lm(Recall ~ Task, data=d)
+model1.2 = lmer(Recall ~ Task + (1|Subject), REML=FALSE, data=d)
+
+anova(model1.2, model1.1) # this might work, depending on version of lme4
+
+NL1 <- -logLik(model1.2) # complex model
+NL0 <- -logLik(model1.1) # simpler model
+devdiff <- 2*(NL0-NL1)[1]; devdiff # equivalent of chisq
+dfdiff <- attr(NL1,"df")-attr(NL0,"df") # diff in params, df for chisq
+pchisq(devdiff,dfdiff,lower.tail=FALSE)
+```
+
+## Example 2
+```{r}
+model2.1 = lmer(Recall ~ Task + (1|Subject), REML=FALSE, data=d)
+model2.2 = lmer(Recall ~ Task + Valence + (1|Subject), REML=FALSE, data=d)
+
+anova(model2.1, model2.2)
+```
+
+
+## Example 3
+```{r}
+model3.1 = lmer(Recall ~ Task + (1|Subject), REML=FALSE, data=d)
+model3.2= lmer(Recall ~ Valence + (1|Subject), REML=FALSE, data=d)
+
+AIC(model3.1, model3.2)
+```
+
+## Example 4
+```{r}
+model4.1 = lmer(Recall ~ Task + (1|Subject), data=d)
+model4.2 =lmer(Recall ~ Task + (1 + Task |Subject), data=d)
+
+anova(model4.1, model4.2, refit=FALSE)
+```
+
+## Example 5
+```{r}
+model5.1 = lmer(Recall ~ Task * Valence + (1 + Task|Subject), data=d)
+# model5.2 = lmer(Recall ~ Task * Valence + (1 + Task*Valence|Subject), data=d)
+# anova(model5.1, model5.2)
+```
+

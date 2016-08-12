@@ -1,0 +1,396 @@
+---
+title: "Section Week 8 - Linear Mixed Models"
+output:
+  html_document:
+    highlight: pygments
+    theme: flatly
+    toc: yes
+    toc_depth: 3
+---
+
+Much of the content here is adapted from **Winter, B. (2013). Linear models and linear mixed effects models in R with linguistic applications. arXiv:1308.5499.** [Link](http://arxiv.org/pdf/1308.5499.pdf)
+
+
+## Defining the linear mixed effects model
+
+How is a linear mixed effects model different from the linear models we know already?
+
+Linear mixed models (sometimes called "multilevel models" or "hierarchical models", depending on the context) are a type of regression model that take into account both (1) variation that *is* explained by the independent variables of interest (like `lm()`) -- **fixed effects**, and (2) variation that is *not* explained by the independent variables of interest -- **random effects**. Since the model includes a mixture of fixed and random effects, it's called a **mixed model**. These random effects essentially give structure to the error term $\epsilon$.
+
+The definitions for fixed and random effects can vary (see [here](http://andrewgelman.com/2005/01/25/why_i_dont_use/)) so be careful how you interpret it in the literature; however, for most purposes you can think of a variable as a **fixed effect factor** if data has been collected from all levels of interest (e.g., `gender`: male/female, `condition`: easy/medium/hard, `doseage`: low/high), and as a **random effect factor** if the variable has a bunch of possible levels but you only sample a random collection (e.g., subjects, stimuli, classrooms) and though these samples will have some idiosyncrasies, you generally won't care about them, with the goal of generalizing to the broader population (e.g., all people, all scenarios, all classrooms).
+
+#### Example
+
+Let's say you're interested in language, and more specifically how **voice pitch** is related to **politeness**. You ask your subjects to respond to hypothetical scenarios (IV, within-subject) that are either more **formal situations** that require politeness (e.g., giving an excuse for being late to a professor) or more **informal situations** (e.g., explaining to a friend why you're late), and measure their **voice pitch** (DV). Each subject is given a list of all the scenarios, so each subject gives multiple polite or informal responses. You also take note of each of your subjects' **genders** (IV, between-subject), since you know that's another important influence on voice pitch.
+
+In a linear model as we've seen so far, we would model this as:
+
+$$\text{pitch} = \text{politeness} + \text{sex} + \epsilon$$
+
+Where the last term is our error term. This error term represents the deviations from our predictions due to “random” factors that we cannot control experimentally.
+
+With this kind of data, since each subject gave multiple responses (a "repeated measures" design), we can immediately see that this would violate the independence assumption that's important in linear modeling: **multiple responses from the same subject cannot be regarded as independent from each other**. In our scenario, every person has a slightly different voice pitch, and this is going to be an idiosyncratic factor that **affects all responses from the same subject**, thus rendering these different responses inter-dependent (correlated) rather than independent.
+
+## Random Effects
+
+The way we’re going to deal with this situation is to add a **random effect** for subject. This allows us to resolve this non-independence by assuming a different “baseline” pitch value for each subject. So, subject 1 may have a mean voice pitch of 233 Hz across different utterances, and subject 2 may have a mean voice pitch of 210 Hz. In our model, we account through these individual differences in voice pitch using random effects for subjects.
+
+We'll look at an example with some data borrowed from **Winter and Grawunder (2012)**:
+```{r}
+d = read.csv('http://www.bodowinter.com/tutorial/politeness_data.csv')
+
+# summary(d)
+# head(d)
+str(d)
+
+# Let's rename some things!
+names(d)[names(d)=="attitude"] <- "condition"
+names(d)[names(d)=="frequency"] <- "pitch"
+names(d)
+
+str(d)
+
+table(d$subject)
+table(d$subject, d$condition)
+```
+
+Now let's visualize the data:
+```{r fig.width=10, fig.height=4}
+library(ggplot2)
+theme_set(theme_bw(base_size = 18))
+
+qplot(condition, pitch, facets = . ~ subject, 
+      colour = subject, geom = "boxplot", data = d)
+```
+
+Subjects "F#" are female subjects. Subjects "M#" are male subjects. You immediately see that **males have lower voices than females** (as is to be expected). But on top of that, within the male and the female groups, you see lots of **individual variation**, with some people having relatively higher values for their sex and others having relatively lower values, regardless of the condition. 
+
+### Correlation of samples from same subject
+
+Another way to say this is that within subjects there is a correlation of pitch by condition. Let's visualize this:
+
+```{r fig.width=5, fig.height=4, echo=FALSE}
+pol_subj = subset(d, condition=='pol'); head(pol_subj)
+inf_subj = subset(d, condition=='inf'); head(inf_subj)
+
+qplot(pol_subj$pitch, inf_subj$pitch) + 
+  geom_smooth(method="lm", fullrange=TRUE)
+```
+
+
+### Modeling individual means with random intercepts
+
+We can model these individual differences by assuming different **random intercepts** for each participant; each participant is assigned a different intercept value (i.e., a different mean voice pitch), and the mixed model essentially estimates these intercepts for you.
+
+Turning back to our model, our old formula was:
+
+$$\text{pitch} = \text{int} + \text{politeness} + \text{sex} + \epsilon$$
+
+Our updated formula looks like this: 
+
+$$\text{pitch} = \text{int} + \text{politeness} + \text{sex} + (1 | \text{subject}) + \epsilon$$
+
+"`(1|subject)`" is the R syntax for a *random intercept*. What this is saying is "assume an intercept that’s different for each subject"" … and "1" stands for the intercept here. You can think of this formula as telling your model that it should expect that there’s going to be multiple responses per subject, and these responses will depend on each subject’s baseline level. This effectively resolves the non-independence that stems from having multiple responses by the same subject.
+
+Note that the formula still contains a general error term $\epsilon$. This is necessary because even if we accounted for individual by-subject variation, there’s still going to be "random" differences between different utterances from the same subject.
+
+Get an idea for the different participant means, across conditions:
+```{r}
+pitch_bysubj = with(d, aggregate(pitch ~ subject, FUN = "mean"))
+pitch_bysubj
+```
+
+Now with `lmer() {lme4}`, we can estimate the means for each participant. To do this, we'll include a random intercept for each subject, and then look at the estimated intercepts.
+```{r}
+library(lme4)
+res1 = lmer(pitch ~ (1 | subject), data = d)
+# summary(res1)
+coef(res1)$subject[1]
+
+# fixed effect + random effect by subject
+fixef(res1)['(Intercept)'] + ranef(res1)$subject
+```
+Note that the estimates are pretty close to the actual mean pitches!
+
+We can see that the actual mean pitch across subjects is the estimated `(Intercept)`, and the standard deviation across the subjects' mean pitch is the standard deviation (`Std.Dev.`) of the random effects!
+```{r}
+# Using the raw data
+mean(pitch_bysubj$pitch)
+sd(pitch_bysubj$pitch)
+
+# Using the estimated intercepts for each subj
+mean(coef(res1)$subject[1][,'(Intercept)'])
+sd(coef(res1)$subject[1][,'(Intercept)'])
+
+# This is also summarized in the model output!
+summary(res1)
+```
+
+## Including fixed effects
+Since we predicted that the condition of the hypothetical scenario ("informal" vs. "polite") would affect pitch (maybe the pitch will be higher in informal scenarios), in addition to gender of the subjects (pitch will probably be higher for females), let's include a model with these terms, while also taking into account the random intercepts for each subject (letting the intercept vary by subject).
+
+$$\text{lmer(pitch ~} \text{politeness} + \text{sex} + (1 | \text{subject))}$$
+
+$$\text{pitch}_j = \text{intercept} +  \text{intercept}_j  + \text{condition} + \text{gender}$$
+
+$$\text{pitch for subject A} = \text{intercept} + \text{subject A's intercept shift} + \text{condition} + \text{gender}$$
+
+
+```{r fig.width=6, fig.height=4}
+library(dplyr)
+
+d_bycond = na.omit(d) %>%
+  group_by(gender, condition) %>%
+  summarise(mean_pitch = mean(pitch))
+  
+ggplot(d_bycond, aes(x=condition, y=mean_pitch, 
+              colour=gender, group=gender)) +
+    geom_line(size=2) + geom_point(size=5, shape=21, fill="white")
+```
+
+Here, we'll also contrast code `condition` and `gender`, so that we can see the effect of condition at the "mean" between females and males, and the effect of gender at the mean between "informal" and "impolite". The same rules from `lm()` still apply!
+
+```{r}
+contrasts(d$condition) = cbind(inf_vs_pol=c(1,-1)); contrasts(d$condition)
+contrasts(d$gender) = cbind(f_vs_m=c(1,-1)); contrasts(d$gender)
+
+res2 = lmer(pitch ~ condition + gender + (1|subject), data=d)
+summary(res2)
+```
+
+Here, we can see that our mean pitch is 192.88, pitch is lower higher for informal than polite scenarios, b=9.71, t=3.03, and pitch is higher for females than males, b=54.10, t=5.14. We can use a rough rule-of-thumb that the $t$ is probably significant if it's greater than 2. We'll talk more about testing significance of estimates in a bit!
+
+#### More model information
+
+We can assess the models with many different types of information. When **comparing models** this info can be useful! One useful measure is the **AIC**, which is $deviance + 2*(p+1)$, where $p$ is the number of parameters in the model (here, we've broken the parameters down so 1 is for the estimated residual variance, and $p$ is all the other parameters, e.g., our coefficents for fixed effects + our estimated variances, etc. for the random effects). Lower AICs are better, since higher deviances mean that the model is not fitting the data well. Since AIC increases as $p$ increases, AIC is penalized for more parameters.
+
+$$\text{deviance} = -2*\text{log likelihood}$$
+$$\text{AIC} = \text{deviance} + 2*(p + 1)$$
+
+```{r}
+logLikelihood = logLik(res2)
+deviance = -2*logLikelihood[1]; deviance
+
+# calculate aic by hand
+p = 4 # number of parameters = 3 (fixed) + 1 (random)
+deviance + 2*(p+1) # total parameters = 4 + 1 for estimated residual variance
+
+AIC(res2)
+```
+
+#### Extracting all the coefficients
+```{r fig.width=8, fig.height=2.5}
+d_bysubj = na.omit(d) %>%
+  group_by(subject) %>%
+  summarise(mean_pitch = mean(pitch))
+
+ggplot(d_bysubj, aes(x=factor(subject), y=mean_pitch)) +
+  geom_point(size=4, aes(colour = factor(subject)))
+```
+
+```{r}
+coef(res2)
+```
+
+Here, we can see that this model yields a **separate intercept for each subject**, in addition to a parameter estimate/slope for condition and gender that is **constant across subjects**. From here, we could try to estimate a given subject's mean pitch based on these coefficients! For instance, let's try to estimate subject F1's mean ($\bar{x}$ =`232.0357`) using their estimated intercept, and the effect of being a female:
+```{r}
+179.3003 + 0*(9.7) + 1*(54.10244)
+# pitch_bysubj
+```
+Pretty close!
+
+Now for M3 ($\bar{x}$ =`168.9786`):
+```{r}
+220.3196 + 0*(9.7) + -1*(54.10244)
+```
+Again, not bad!
+
+
+## Random slopes
+
+In the models above, we assumed that the effect of politeness was the same for all subjects, and thus had one coefficient for politeness. However, the effect of politeness might be different for different subjects; that is, there might be a **politeness : subject interaction**. For example, it might be expected that some people are more polite in polite scenarios, others less. So, what we need is a random slope model, where subjects and items are not only allowed to have differing intercepts, but where they are also allowed to have different slopes for the effect of politeness (i.e., different effects of condition on pitch).
+
+$$\text{lmer(pitch ~} \text{condition} + \text{gender} + \text{(1 + condition | subject))}$$
+
+$$\text{pitch for subject A} = \text{intercept} + \text{subject A's intercept shift} + \text{condition} + \text{subject A's condition slope shift}+ \text{gender}$$
+
+Let's start be visualizing the data:
+```{r fig.width=6,  fig.height=4, echo=FALSE}
+d_bycond = na.omit(d) %>%
+  group_by(subject, condition) %>%
+  summarise(mean_pitch = mean(pitch))
+  
+ggplot(d_bycond, aes(x=condition, y=mean_pitch, 
+              colour=subject, group=subject)) +
+    geom_line() + geom_point(shape=21, fill="white")
+```
+
+Based on this plot, does it look like the slopes are very variable across subjects?
+
+Now add in the random slopes:
+```{r}
+res3 = lmer(pitch ~ condition + gender + (1 + condition | subject), REML = TRUE, data = d)
+summary(res3)
+coef(res3)
+
+anova(res2, res3, refit=FALSE)
+```
+
+
+It looks like they're *not* warranted in this case. Adding random slopes for each subject takes up 2 more degrees of freedom, and **doesn't significantly improve model fit**, $\chi^2 (2) = 0.024, p = 0.99$. Note that the df=2 because we're adding both a slope variance and a correlation between intercept and slope. Looking at the AIC values, AIC is higher for the more complex model, so we want to go with the less complex (more parsimonious) model. If we look at the estimated slopes, we can see they're pretty similar across subjects! So, it appears that we don't need to include random slope for condition in the model; 
+
+However, others would argue that we should **keep our models maximal** and should include the random slopes even if they don't improve the model! To read more about this debate, check out this paper [Barr, Levy, Scheepers, & Tilly, 2013](http://idiom.ucsd.edu/~rlevy/papers/barr-etal-2013-jml.pdf).
+
+
+## Testing signifiance
+While there's some debate about whether you should get p-values for `lmer()` models (e.g., [this](http://glmm.wikidot.com/faq#df); most of the debate centers around how to compute the dfs), you can get df approximations (and thus, p-values) using the `{lmerTest}` package.
+
+For some examples on how others have written up `lmer()` results in journals, check out [this page](http://web.stanford.edu/class/psych253/section/section_8/lmer_examples.html). [This](http://pss.sagepub.com/content/early/2014/11/25/0956797614557697.full.pdf+html) *Psych Science* paper is also a good (and short!) example.
+
+### Getting p-values
+```{r}
+library(lmerTest)
+res2b = lmer(pitch ~ condition + gender + (1 | subject), REML = TRUE, data = d)
+res3b = lmer(pitch ~ condition + gender + (1 + condition | subject), REML = TRUE, data = d)
+
+summary(res3b)
+```
+
+#### Comparing model outputs with SS w/Kenward-Roger appox
+```{r}
+anova(res2, refit=FALSE)
+anova(res2b, ddf="Kenward-Roger", refit=FALSE)
+```
+
+### Model comparison
+
+On the other hand, some argue that model comparison with **likelihood ratio tests** is a better way of testing whether a parameter is significant. That is, if adding the parameter to your model significantly improves model fit, then that parameter should be included in the model. 
+
+The likelihood ratio test essentially tells us how much more likely the data is under a more complex model than under the simpler model (these models need to be nested!):
+
+$$D = -2*ln(\frac{\text{likelihood for simple model}}{\text{likelihood for complex model}}) = -2*ln(\text{likelihood for simple model}) + 2*ln(\text{likelihood for complex model})$$
+
+The distribution of D is approximately $\chi^2$ with df2-df1 degrees of freedom. We either do this computation "by hand", or just use the `anova()` function!
+
+```{r}
+res4 = lmer(pitch ~ gender + (1 | subject), REML = FALSE, data = d)
+res4b = lmer(pitch ~ condition + gender + (1 | subject), REML = FALSE, data = d)
+anova(res4, res4b)
+
+# doing this by hand:
+dev1 <- -2*logLik(res4b) # deviance complex model
+dev0 <- -2*logLik(res4) # deviance simpler model
+devdiff <- as.numeric(dev0-dev1) # difference in deviances
+dfdiff <- attr(dev1,"df")-attr(dev0,"df") # difference in params (using dfs)
+cat('Chi-square =', devdiff, '(df=', dfdiff,'), p =', 
+  pchisq(devdiff,dfdiff,lower.tail=FALSE))
+```
+
+Here, we compared two nested models, one without `condition` and the other with `condition`. Using model comparison we conclude that inclusion of condition is warranted in our model since it significantly improves model fit, $\chi^2(1)=8.79, p < 0.01$. 
+
+## REML vs. ML
+Check out the [cheatsheet here](http://www.stanford.edu/class/psych252/tutorials/model_comparisons.png) for when to use different types of metrics!
+
+Adapted from HW5: 
+
+Let us start with a statistical model that specifies (i) the fixed effects and (ii) the variances and covariances of the Normal distributions of the various random effects.
+
+- In **ML** (Maximum Likelihood) estimation, we calculate the log(likelihood) (LL) of the data for an arbitrary choice of parameter values in sets (i) and (ii) above. We then search for the parameter values that maximize LL (or minimize –LL). These optimal parameter values are called the ML parameter estimates. The maximum value of LL (times -2) is called the deviance of the model. For some purposes, such as, describing the data, we focus on the ML parameter estimates; for other purposes, such as, model comparison, we focus on the deviance. The behavior of ML estimates has been well-studied and shown to be ‘desirable’. You **should use ML when comparing models that differ in their fixed effects**, and you must include `lmer(, REML=FALSE)`. Further, if you're comparing an `lm()` and `lmer() model` (i.e., testing if *any* random effects are warranted), you should also use ML estimation.
+
+- In **REML** (REstricted ML) estimation, our main interest is in estimating the **random effects**, not the fixed effects. Imagine that we restrict our parameter space by setting the fixed effects parameters in set (i) above to certain plausible values. In this restricted space, we search for the values of the random effects parameters in set (ii) that maximize the LL of the data; also note the maximum value of LL. Then repeat this process many times. Then average, across the fixed effects parameter values, the estimates of the random effects parameters and the maximum values of LL. This averaging yields the REML parameter estimates and the REML deviance. Because this process pays scant attention to the fixed effects parameters, **it should not be used to compare models that differ in their fixed effects structure**. You should just **use this when comparing models that differ in their random effects**. To do this, you should get in the habit of including `lmer(, REML=TRUE)`, and using `anova(, refit=FALSE)` when running model comparisons.
+
+#### An example
+
+Testing whether random effects are warranted
+```{r}
+res5 = lmer(pitch ~ condition + gender + (1 | subject), REML = FALSE, data = na.omit(d))
+res5b = lm(pitch ~ condition + gender, data = d)
+
+# anova(res5b, res5) # doesn't work!
+
+dev1 <- -2*logLik(res5)
+dev0 <- -2*logLik(res5b)
+devdiff <- as.numeric(dev0-dev1); devdiff
+dfdiff <- attr(dev1,"df")-attr(dev0,"df"); dfdiff
+cat('Chi-square =', devdiff, '(df=', dfdiff,'), p =', 
+  pchisq(devdiff,dfdiff,lower.tail=FALSE))
+
+# Compare AICs
+AIC(res5b, res5)
+#install.packages('bblme')
+bbmle::AICtab(res5b, res5) # delta (difference) AIC
+
+# Compare lm with nlme model directly with anova
+library(nlme)
+res5c = lme(pitch ~ condition + gender, random=~1|subject, method = 'ML', data = na.omit(d))
+anova(res5c, res5b) # need to put nlme model first
+```
+
+It looks like, yes, the inclusion of random intercepts for subjects is warranted, $\chi^2$ (1) = 19.51, p < 0.001.
+
+Here, the $\chi^2$ distribution isn't always a good approximation of the null distribution (too conservative when testing some random effects, and not conservative enough when testing some fixed effects), so keep that in mind. You can use a parametric bootstrap to get a better p-value, but we won't cover that here. Check out these [lecture notes](http://www.stat.wisc.edu/~ane/st572/notes/lec21.pdf) for some more info.
+
+## Item effects
+Now, different stimuli may elicit different values of “pitch”; as a result, pitch for a given scenario may be correlated across subjects, and even within a subject for the polite and informal conditions. We can model this as a random effect!
+
+```{r fig.width=5, fig.height=3}
+d$scenario = factor(d$scenario)
+ggplot(d, aes(x=scenario, y=pitch, 
+              colour=scenario)) +
+    geom_boxplot()
+```
+
+```{r}
+res4 = lmer(pitch ~ condition + gender + (1|subject) + (1|scenario), data=d)
+summary(res4)
+
+anova(res2, res4, refit=FALSE)
+
+coef(res4)
+# ranef(res4)
+```
+Similar to the random intercepts for subjects, now we have a mean level of pitch for each scenario!
+
+
+What about varying the slopes for each item?
+```{r}
+d_byscenario = na.omit(d) %>%
+  group_by(scenario, condition) %>%
+  summarise(mean_pitch = mean(pitch))
+  
+ggplot(d_byscenario, aes(x=condition, y=mean_pitch, 
+              colour=scenario, group=scenario)) +
+    geom_line() + geom_point(shape=21, fill="white")
+```
+
+```{r}
+res4b = lmer(pitch ~ condition + gender + (1|subject) + (1 + condition|scenario), data=d)
+summary(res4b)
+
+anova(res4, res4b, refit=FALSE)
+
+# coef(res4b)
+```
+
+Nope, doesn't really improve the model. That probably means our scenarios are probably pretty even in eliciting similar differences between informal and polite situations.
+
+## Some final notes about mixed modeling
+
+There are a few important things to say here: You might ask yourself “Which random slopes should I specify?” … or even “Are random slopes necessary at all?” 
+ 
+Conceptually, it makes a lot of sense to include random slopes along with random intercepts. After all, you can almost always expect that people differ with how they react to an experimental manipulation! And likewise, you can almost always expect that the effect of an experimental manipulation is not going to be the same for all of items in your experiment. 
+ 
+In the model above, our whole study crucially rested on stating something about politeness. We were not interested in gender differences, but they are well worth controlling for. This is why we had random slopes for the effect of attitude (by subjects and item) but not gender. In other words, we only modeled by-subject and by-item variability in how politeness affects pitch. 
+
+We've talked a lot about the different assumptions of the linear model. The good news is: Everything that we discussed in the context of the linear model applies straightforwardly to mixed models. So, you also have to worry about collinearity and outliers. And you have to worry about homoscedasticity (*equality of variance*) and potentially about lack of normality.
+
+Independence, being the most important assumption, requires a special word: One of the main reasons we moved to mixed models rather than just working with linear models was to resolve non-independencies in our data. However, mixed models can still violate independence … if you’re missing important fixed or random effects. So, for example, if we analyzed our data with a model that didn’t include the random effect “subject”, then our model would not “know” that there are multiple responses per subject. This amounts to a violation of the independence assumption. So choose your fixed effects and random effects carefully, and always try to resolve non-independencies. 
+
+### Some other notes:
+If your dependent variable is…
+
+- **Continuous:** use a linear regression model with mixed effects
+- **Binary:** use a logistic regression model with mixed effects
+
+Function `lmer` is used to fit linear mixed models, function `glmer` is used to fit generalized (non-Gaussian) linear mixed models.
+

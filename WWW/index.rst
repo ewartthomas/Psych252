@@ -19,10 +19,11 @@ Instructors:
 
 Ewart Thomas, Benoît Monin
 
-2015 Teaching Assistants:
+2016 Teaching Assistants:
 ~~~~~~~~~~~~~~~~~~~~
 
-Dan Birman, Steph Gagnon, Robert Hawkins
+Andrew Lampinen, Joshua Morris, and Yochai Shavit 
+
 
 Contents
 --------
@@ -40,4 +41,5 @@ Contents
    plots/index.rst
    apps/index.rst
    section_2013/index.rst
+   section_2015/index.rst
    
