@@ -1,0 +1,78 @@
+---
+title: "Psych253 Website Analysis"
+output:
+  html_document:
+    highlight: pygments
+    theme: flatly
+---
+
+## Some website stats from spring 2015
+```{r echo=FALSE}
+df = read.csv('~/Class/Psych252/WebsiteAnalysis/Analytics All Web Site Data Location 20150823-20151203.csv')
+```
+
+Total number of sessions: `r sum(as.numeric(df$Sessions))`
+
+Total number of unique new users: `r sum(df$New.Users)`
+
+### Visualize the locations of new users
+
+Move the mouse over the map to see the country and total number of new users!
+```{r results='asis', echo=FALSE, warning=FALSE, message=FALSE}
+library(doBy)
+d_country <- summaryBy(New.Users~Country, data=df, FUN=sum)
+colnames(d_country) = c('Country', 'New.Users')
+
+library(googleVis)
+op <- options(gvis.plot.tag='chart')
+Geo=gvisGeoMap(d_country[-1,], locationvar="Country", numvar="New.Users", 
+               options=list(height=350, dataMode='regions'))
+
+plot(Geo)
+```
+
+### Cities with the top # of new users
+```{r results='asis', echo=FALSE, warning=FALSE, message=FALSE}
+data=df[-1,]
+data=data[data$New.Users > 4,]
+
+CC <- gvisComboChart(data, xvar='City',
+          yvar=c('New.Users'),
+          options=list(seriesType='bars',
+                       width=800, height=400))
+plot(CC)
+```
+
+### Regions with the top # of new users
+```{r results='asis', echo=FALSE, warning=FALSE, message=FALSE}
+data=df[-1,]
+data <- summaryBy(New.Users~Region, data=data, FUN=sum)
+colnames(data) = c('Region', 'New.Users')
+data=data[! data$Region %in% c('(not set)'),]
+data=data[data$New.Users > 8,]
+
+CC <- gvisComboChart(data, xvar='Region',
+          yvar=c('New.Users'),
+          options=list(seriesType='bars',
+                       width=800, height=400))
+plot(CC)
+```
+
+### Countries with the top # of new users
+```{r results='asis', echo=FALSE, warning=FALSE, message=FALSE}
+data=df[-1,]
+data <- summaryBy(New.Users~Country, data=data, FUN=sum)
+colnames(data) = c('Country', 'New.Users')
+data=data[data$New.Users > 10,]
+
+CC <- gvisComboChart(data, xvar='Country',
+          yvar=c('New.Users'),
+          options=list(seriesType='bars',
+                       width=800, height=400))
+plot(CC)
+```
+
+## List of all views
+```{r}
+print(df[-1,c('City', 'Country', 'Sessions', 'New.Users')])
+```
