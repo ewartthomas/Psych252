@@ -1,28 +1,37 @@
 252 Course Website
 ==============
 
-This directory contains the source material and config file to build the course website. This is a [Sphinx](http://sphinx-doc.org/) website.
+## Making changes to the website:
 
-Raw datafiles go in `datasets/`. A description of the datasets lives in `data/index.rst`. The markup language used here is called RestructuredText, which is like Markdown but a bit more complex (and thus expressive).
+### Dependencies
 
-PDFs of slides go in `WWW/slides_files`. IMPORTANT NOTE: This folder is *not* under version control (see .gitignore). 
+To update the website, you'll need to have the following on your computer:
 
-Building the website
---------------------
+- a Github account
+- git installed on your computer (or GitHub Mac)
+- Sphinx (in terminal: `easy_install sphinx`)
+- Sphinx bootstrap themes (in terminal: `easy_install sphinx-bootstrap-theme`)
 
-To build the site, type `make html` in your terminal from this directory. Typing `make clean` first will remove old builds, which may be something you want to do.
+### Generating the html files
 
-Once you've built the site, if you want to check it before uploading, you'll have to start a local webserver. This is easy to do by running the following command in your terminal (from this directory):
+Once you've made changes to the files in the WWW folder (e.g., adding new .Rmds or .htmls into the section folder; updating an index.rst file), you'll need to generate the new html files. To do this, type the following into your terminal:
 
-    python -m SimpleHTTPServer
+```
+cd ~/yourfilepath/Psych253/WWW
+make clean html
+./upload_website.sh <sunetid>
+```
 
-Once that is running, open a browser tab and navigate to `localhost:8000/_build/html`. This will show you the local version of the website.
+Check out more details in the README in the WWW folder!
 
-Uploading to the Stanford website
----------------------------------
+### Updating Github
 
-To upload the website, run the following command:
+Now that you've made changes on your computer, you'll need to sync the changes with Github so everyone else can access them (make sure you've pulled any changes that others might have made before you make edits!). Do to this, you can type in the following:
 
-    ./upload_website.sh <sunetid>
+```
+git pull origin master
+git add -A :/
+git commit -m 'Type a brief message about what you've changed'
+git push origin master
+```
 
-where `<sunetid>` is replaced with your Stanford username. If your Stanford username is the same as the username on your computer, you can omit this argument. I believe that file permissions should persist in git, but if you get a "Permission denied" error, you have to make the script executable by doing `chmod u+x upload_website.sh`.
