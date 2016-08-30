@@ -38,7 +38,7 @@ data_long <- data_short %>%
   gather("variable","value",3:5)
 ```
 
-(Note that we did with the `%>%` is called **piping**, and `%>%`is called the pipe operator. The pipe operator uses the output of the thing on its left as the first argument to the function on its right. For example, in the above code the pipe operator passes data_short dataframe in to the 'data' argument of the gather function. Piping is similar to layering in `{ggplot()}`. It provides a cleaner way to write function composition.)
+(Note that what we did with the `%>%` is called **piping**, and `%>%`is called the pipe operator. The pipe operator uses the output of the thing on its left as the first argument to the function on its right. For example, in the above code the pipe operator passes data_short dataframe in to the 'data' argument of the gather function. Piping is similar to layering in `{ggplot()}`. It provides a cleaner way to write function composition.)
 
 Now, this dataframe is NOT intuitive right now. What do the names mean? Let's continue the piping expression above and add an additional step to rename the un-intuitive variables:
 
