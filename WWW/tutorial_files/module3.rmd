@@ -38,7 +38,7 @@ data_long <- data_short %>%
   gather("variable","value",3:5)
 ```
 
-Notice that we did what is called **piping**, by using the `%>%` pipe operator to pass the data_short dataframe in to the gather function. Piping is similar to layering in `{ggplot()}`. 
+(Note that we did with the `%>%` is called **piping**, and `%>%`is called the pipe operator. The pipe operator uses the output of the thing on its left as the first argument to the function on its right. For example, in the above code the pipe operator passes data_short dataframe in to the 'data' argument of the gather function. Piping is similar to layering in `{ggplot()}`. It provides a cleaner way to write function composition.)
 
 Now, this dataframe is NOT intuitive right now. What do the names mean? Let's continue the piping expression above and add an additional step to rename the un-intuitive variables:
 
@@ -50,7 +50,7 @@ data_long <- data_short %>%
 
 ### Setting up variables
 
-Since the levels of `num` were created from the original column names (i.e., num1, num2, num3), R interprets the 'num' variable as a factor. However, we want to treat num as a quantitative variable, and need to force num to be numeric. We also want the subject id (`id`) to be a factor:
+Since the levels of `num` were created from the original column names (i.e., num1, num2, num3), R interprets the 'num' variable as a factor. However, we want to treat num as a quantitative variable, and need to force num to be numeric. We also want the subject id (`id`) to be a factor. To make these changes, we use the function `mutate()`, which allows us to add new columns which are transformations (and combinations) of old columns.
 
 ```{r forcevars_dl}
 data_long <- data_long %>%
@@ -58,13 +58,20 @@ data_long <- data_long %>%
   select(-solutions,-sid)
 ```
 
-We also need to rescale `id` to 1:10 within each level of `attn`, since the subject id (`id`) is 11:20 when attn is 'focused'. So we need to select only these values of `id`, and transform them to 1:10. This requires creating a new column, `cond.id`, in the dataframe, `dl`.
+(We then remove the old columns we don't want by deselecting them -- selecting with a - in front.)
+
+We also need to rescale `id` to 1:10 within each level of `attn`, since the subject id (`id`) is 11:20 when attn is 'focused'. So we need to select only these values of `id`, and transform them to 1:10. This requires creating a new column, `cond.id`, in the dataframe, `dl`. (In general, it's always best to create a new column rather than changing a column under the same name, it makes it less damaging to run code twice.) 
 
 ```{r rescaleid_dl}
-data_long$cond.id = as.numeric(data_long$id)
-data_long$cond.id[data_long$attention=="focused"] = data_long$cond.id[data_long$attention=="focused"]-10
-data_long$cond.id = factor(data_long$cond.id)
+data_long = data_long %>% 
+  mutate(cond.id = factor(ifelse(as.numeric(id) > 10, as.numeric(id) - 10, as.numeric(id))))
+
+
 ```
+
+In the above code we used the function `ifelse()` which takes three arguments: a condition, what to output if the condition is true, and what to output if the condition is false. In this case, the approximate meaning is "If id is greater than 10, let cond.id be id-10, otherwise let cond.id be id." 
+
+(In large data frames, it may be more efficient to create a temporary variable for `as.numeric(id)` rather than calling it three times in a row.)
 
 ### Advanced ggplot()
 
@@ -84,7 +91,7 @@ ggplot(data_long,aes(x=nsols,y=solved)) +
   theme_bw()
 ```
 
-Breaking down by subject, within each level of attn, is also doable with `qplot()` (the x-axis labeling is poor though). Using the layer `geom_line` instead of `geom_point` joins the points by lines and suppresses the points:
+Breaking down by subject, within each level of attn, is also doable (the x-axis labeling is poor though, for a bonus exercise figure out how to fix it). Using the layer `geom_line` instead of `geom_point` joins the points by lines and suppresses the points:
 
 ```{r qplot_num_on_score_facet_levels, fig.width=7, fig.height=4}
 ggplot(data_long,aes(x=nsols,y=solved,color=cond.id)) +
@@ -135,7 +142,7 @@ Note that the fitted regression line runs through zero, exactly as expected for 
 
 ### Removing outliers
 
-These last diagnostic plots suggest that observations 6 and 34 are outliers. What would the plot look like if these outliers were removed? To do this, we can give R a *negative vector* by typing `-c(6, 34)`, and then we can tell R to take all the values *minus* the values in the vector from the variable. By saying `URate[-c(6,34)]` we're telling R to take all the rows in Urate with the exception of 6 and 34.
+These last diagnostic plots suggest that observations 6 and 34 are outliers. What would the plot look like if these outliers were removed? To do this, we can give R a *negative vector* by typing `-c(6, 34)`, and then we can tell R to take all the values *minus* the values in the vector from the variable. By saying `URate[-c(6,34)]` we're telling R to take all the rows in Urate with the exception of 6 and 34. (Note the parallel to removing columns in dplyr's select function above by using the minus sign.) 
 
 ```{r plot_col_on_rtw_no_outliers, fig.width=7, fig.height=6}
 rtw.table.no = rtw.table[-c(6,34),]
