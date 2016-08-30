@@ -54,7 +54,7 @@ Since the levels of `num` were created from the original column names (i.e., num
 
 ```{r forcevars_dl}
 data_long <- data_long %>%
-  mutate(nsols = as.numeric(solutions), id = factor(sid)) %>%
+  mutate(nsols = as.numeric(substr(solutions, 4, 4)), id = factor(sid)) %>%
   select(-solutions,-sid)
 ```
 
@@ -65,8 +65,6 @@ We also need to rescale `id` to 1:10 within each level of `attn`, since the subj
 ```{r rescaleid_dl}
 data_long = data_long %>% 
   mutate(cond.id = factor(ifelse(as.numeric(id) > 10, as.numeric(id) - 10, as.numeric(id))))
-
-
 ```
 
 In the above code we used the function `ifelse()` which takes three arguments: a condition, what to output if the condition is true, and what to output if the condition is false. In this case, the approximate meaning is "If id is greater than 10, let cond.id be id-10, otherwise let cond.id be id." 
@@ -197,7 +195,7 @@ rtwl_paired = read.csv('http://stanford.edu/class/psych252/data/rtwl.paired.csv'
 str(rtwl_paired)
 ```
 
-Now let's take a quick peek at this data. Since rtwl_paired is in short-form, we need to make some changes before boxplot can generate a plot for us. We'll start by making a variable by combining the data in the variable rtwl_paired$col0 with the data in rtwl_paired$col1:
+Now let's take a quick peek at this data. Since `rtwl_paired` is in short-form, we need to make some changes before boxplot can generate a plot for us. We'll start by making a variable by combining the data in the variable `rtwl_paired$col0` with the data in `rtwl_paired$col1`:
 
 ```{r combine_cols_rtwl_paired}
 col = c(rtwl_paired$col0, rtwl_paired$col1)
@@ -225,7 +223,7 @@ Finally,  we can create a boxplot:
 ```{r plot_col_on_rtwl_paired, fig.width=4, fig.height=3}
 ggplot(data=rtwl_plong, aes(x=rtwl,y=CostOfLiving,fill=rtwl)) +
   geom_boxplot() +
-  ggtitle('Cost of Liivng vs. Right to Work Laws: Paired data') +
+  ggtitle('Cost of Living vs. Right to Work Laws: Paired data') +
   xlab('')
 ```
 
@@ -321,9 +319,9 @@ ggplot(data=exer, aes(x=time, y=pulse, color=id)) +
   theme_bw()
 ```
 
-### Bar graphs
+### Box plot
 
-We might also want to visualize this data in bar graph form. To do this with ggplot, we'll use the `summarise()` function to get means and confidence intervals from the data.
+We might also want to visualize this data in box plot form. To do this, we'll use the `summarise()` function from dplyr to get means and confidence intervals from the data.
 
 First, we'll extract the mean pulses across subjects for each of the 6 groups at all three time points:
 
@@ -333,9 +331,9 @@ ms = exer %>%
   summarise(ci95=sd(pulse)/sqrt(n())*1.96,pulse=mean(pulse))
 ```
 
-Caution: if you don't take sd first in summarise it will already have re-assigned pulse to be the mean values, and the script won't work (try it out if you understand the problem here...).
+Caution: if you don't take sd first in summarise it will already have re-assigned pulse to be the mean values, and the script won't work (try it out if you understand the problem here...). This caution also applies to other dplyr functions, such as mutate. (This can be useful behavior, though abusing it may make your code more difficult to read).
 
-Finally, we plot the bar graph:
+Finally, we plot the box plot:
 ```{r qlot_time_on_pulse_facet_bars, fig.width=7, fig.height=5}
 ggplot(data=ms) +
   geom_boxplot(aes(time,pulse,ymin=pulse-ci95,ymax=pulse+ci95,color=exertype)) +
