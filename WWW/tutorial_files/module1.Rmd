@@ -1,3 +1,4 @@
+
 ---
 title: "Introduction to Statistical Computing with R: Module 1"
 output:
@@ -99,14 +100,19 @@ a = 10
 b = 20
 a = b
 print(a)
+
+## Note that we can now use the variable in calculations (this will become more important later on) ##
+a+b
+b-a^2
 ```
+
 
 Using functions
 ---------------
 
 Check out the helpful [R cheatsheet](http://stanford.edu/class/psych252/cheatsheets/index.html#r-cheatsheet) on the class site to see a list of some commonly used functions!
 
-Another core concept involves using *functions* to perform more complex operations. Functions in R work like they do in mathematics: they specify a transformation from one or more inputs (called *arguments* or *parameters*) to one or more outputs (or *return values*). You *call* a function by writing its name followed by parentheses, with any arguments going inside the parentheses. We already saw one example of this with the `print()` function above. The `cat()` function is similar, but it converts its arguments into characters first. There are also some basic mathematical functions built into R that operate on numbers:
+Another core concept involves using *functions* to perform more complex operations. Functions in R work like they do in mathematics: they specify a transformation from one or more inputs (called *arguments* or *parameters*) to one or more outputs (or *return values*). You *call* a function by writing its name followed by parentheses, with any arguments going inside the parentheses. We already saw one example of this with the `print()` function above. The `cat()` function is similar, but it converts its arguments into characters first (This is mostly useful when creating R output files, which we will not be doing much of in this course). There are also some basic mathematical functions built into R that operate on numbers:
 
 ```{r math_functions}
 abs(-4)
@@ -118,7 +124,8 @@ A frequently-used function is `c()`, which stands for *concatenate*. This takes 
 
 ```{r basic_vectors}
 a = c(1.5, 4, 3)
-cat(a)
+a
+cat(a)#note that now the numbers appear as characters
 sum(a)
 mean(a)
 sd(a)
@@ -128,6 +135,7 @@ You can also *compose* functions, which allows for more expressive code:
 
 ```{r composed_functions}
 a = c(-2, 4, 5.5)
+sum(a)
 sum(abs(a))
 ```
 
@@ -179,6 +187,14 @@ or add names to an existing vector:
 v = 1:3
 names(v) = c("foo", "bar", "buz")
 v
+
+### An example of when it may be useful- number of food items on plate ###
+breakfast= c(1, 0, 2, 4, 2, 1, 1, 3, 0)
+names(breakfast)= c("elmo", "oscar", "big bird", "cookie monster", "bert", "ernie", "the count", "kermit", "grover")
+breakfast
+lunch= c(3, 4, 0, 6, 1, 1, 2, 1, 2)
+eating=cbind(breakfast, lunch) #vectors can be bunched together using the function cbind(). Note that the names we assigned to our original vector now represent each row. 
+
 ```
 
 To pull specific elements out of a vector, you *index* (or *subscript*) by writing the name of the vector and then adding square brackets (`[ ]`)  with the position of the item you want (starting at 1). You can also use `:` to index multiple elements:
@@ -196,14 +212,30 @@ If your vector has names associated with the values, you can index with those to
 v = 1:3
 names(v)= c("foo", "bar", "buz")
 v["bar"]
+
+### From our example ###
+breakfast["big bird"]
+eating["grover", 2] # we can index using the variable's column number (location)
+eating["cookie monster", "lunch"] #we can index using the varaible's name
 ```
 
 Indexing into a vector allows you not just to use the value in that position, but to change it too:
 
 ```{r index_update}
 v[1:2] = c(4, 5)
+v
 v["buz"] = 6
 v
+
+### in our example- oscar actually had fruit for breakfast ###
+breakfast["oscar"]= 1
+breakfast #notice that the change did not automatically carry over to "eating" dataset
+
+## kermit had sandwich and an egg for lunch ##
+eating["kermit", "lunch"]= 2
+eating
+## ernie had the same breakfast as bert ##
+eating["ernie", "breakfast"] = eating["bert", "breakfast"]
 ```
 
 An important fact about vectors is that all of the elements in the vector have to be the same datatype. For the most part, there are three datatypes you should care about:
@@ -272,6 +304,7 @@ Let's start by loading in the data:
 
 ```{r load_earlydaths}
 df_death = read.csv("http://stanford.edu/class/psych252/data/earlydeaths.csv")
+
 ```
 
 When you load in a dataset, you'll want to explore it a bit so you get a feel for the kind of data it contains (and to ensure that it was loaded properly). It can also be helpful to *visualize* structure in your data frames. For this, you can use some of the functions demonstrated on the [Plotting Examples page](http://stanford.edu/class/psych252/plots/index.html) of the class site! Additionally, some of the basic functions you'll find yourself using to explore the data are `str()`, `head()`, and `summary()`. These all do somewhat different things, which you can likely deduce from their output and help files:
@@ -280,6 +313,10 @@ When you load in a dataset, you'll want to explore it a bit so you get a feel fo
 str(df_death)
 head(df_death)
 summary(df_death)
+
+### Basic visualization ###
+hist(df_death$time)
+
 ```
 
 R has a number of *generic* functions like `summary()` that will behave differently depending on the type of object you called them on. As we see above asking for a summary of a dataframe will report some quantile and count information. You'll use `summary()` a lot, though, and it will sometimes behave very differently. For example, you can call `table()` on two dataframe fields to compute a contingency table (or crosstab) of those data:
@@ -341,7 +378,7 @@ Note that we told the ggplot object that it will use the dataset `scale` as its 
 Now let's add a "layer" of visualization, which ggplot calls a "geom":
 
 ```{r}
-g + geom_histogram(aes(x=years), binwidth=1.9)
+g + geom_histogram(aes(x=years), binwidth=1.9) #note what we plot- number of "cases" (or subjects) per years of work
 ```
 
 That command may look complicated but there are actually only two simple parts:
