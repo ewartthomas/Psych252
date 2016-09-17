@@ -7,7 +7,7 @@ output:
     toc: yes
 ---
 
-Thank you to Paul Thibodeau (2009), 252 instructors in 2010 and 2011, Mike Frank, Benoit Monin, and Ewart Thomas for the original tutorials. Michael Waskom and Steph Gagnon for the conversion to [R Markdown](http://www.rstudio.com/ide/docs/r_markdown). The most recent iteration was created in 2015 by Dan Birman, Natalia Velez, Kara Weisman, and Robert Hawkins.
+Thank you to Paul Thibodeau (2009), 252 instructors in 2010 and 2011, Mike Frank, Benoit Monin, and Ewart Thomas for the original tutorials. Michael Waskom and Steph Gagnon for the conversion to <a href="http://www.rstudio.com/ide/docs/r_markdown">R Markdown</a>. It was updated in 2015 by Dan Birman, Natalia Velez, Kara Weisman, and Robert Hawkins. The most recent iteration was created in 2016 by Andrew Lampinen, Joshua Morris, and Yochai Shavit.
 
 ### Welcome!
 
