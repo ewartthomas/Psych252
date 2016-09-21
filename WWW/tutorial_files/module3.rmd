@@ -136,7 +136,11 @@ ggplot(data=rtw.table,aes(x=UnemploymentRate,y=rs$residuals)) +
   theme_bw()
 ```
 
-Note that the fitted regression line runs through zero, exactly as expected for a plot of the residuals.
+Note that the fitted regression line runs through zero, exactly as expected for a plot of the residuals. The base-R plottingfunction will plot more information and automatically tag outliers for us if we give it the model:
+
+```{r plot_col_on_urate_lm_residuals, fig.width=7, fig.height=6}
+plot(rs)
+```
 
 ### Removing outliers
 
