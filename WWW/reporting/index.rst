@@ -18,7 +18,17 @@ Chi-squared test
 
   $\chi^2$ (`r rs$parameter`, N=`r sum(rs$observed)`) = `r rs$statistic`, p = `r rs$p.value`
 
-### Example writeups
+t-test
+---------------------------
 
+[`Examples <http://www.stanford.edu/class/psych252/reporting/examples/t.html>`_]
+
+.. math::
+
+  t(32) = 2.75, p < 0.05
+
+::
+
+  $t(32) = 2.75, p < 0.05$
 
 ---------------------------
