@@ -9,6 +9,14 @@ in class, and introducing the upcoming homework.
 Week 1
 ################
 
+Homework help
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Here's a guide to starting some of the homework problems: 
+
+[`Rmd <http://www.stanford.edu/class/psych252/section/Week1_Section.Rmd>`_]
+[`html <http://www.stanford.edu/class/psych252/section/Week1_Section.html>`_]
+
 Template homework
 ^^^^^^^^^^^^^^^^^^^^^^^
 
