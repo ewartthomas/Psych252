@@ -67,6 +67,20 @@ ggplot(all_years, aes(length, fill = NumberYears)) +
                  position = 'identity')
 ```
 
+### 1.b-v)
+
+```{r}
+death_data = data.frame(years=1:6,deaths=deaths)
+```
+```{r}
+ggplot(data = death_data,aes(x=years,y=deaths)) +
+  geom_point() +
+  geom_smooth() +
+  theme_bw()
+```
+
+(Note: no confidence intervals because curve fits perfectly -- switch to `geom_smooth(method='lm')` to see a confidence band)
+
 Question 2
 -----------------------------------------
 
