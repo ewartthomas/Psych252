@@ -38,3 +38,29 @@ You can find another handy cheat sheet `here <https://www.rstudio.com/wp-content
 [`html <http://www.stanford.edu/class/psych252/section/Rmarkdown_info.html>`_]
 
 ----------------------------
+
+Week 2
+################
+
+Section file
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Recap on chi-square tests, standard deviation vs. standard error, calculating confidence
+intervals, centering vs. standardizing quantitative variables. At the end, we'll touch on t-tests, and
+how to calculate power.
+
+[`Rmd <http://www.stanford.edu/class/psych252/section/Week2_Section.Rmd>`_]
+[`html <http://www.stanford.edu/class/psych252/section/Week2_Section.html>`_]
+
+
+Calculating chi-square handout
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+[`pdf <http://www.stanford.edu/class/psych252/section/chisq-test.pdf>`_]
+
+Visualizing the relationship between df and t distribution variance
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+[`html <http://www.stanford.edu/class/psych252/section/variance_t_z.html>`_]
+
+----------------------------
