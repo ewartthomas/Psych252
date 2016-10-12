@@ -64,3 +64,24 @@ Visualizing the relationship between df and t distribution variance
 [`html <http://www.stanford.edu/class/psych252/section/variance_t_z.html>`_]
 
 ----------------------------
+
+Week 3
+################
+
+Section file
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Statistical test flowchart. Linear regression and logistic regression bootcamp.
+
+[`Rmd <http://www.stanford.edu/class/psych252/section/Week3_Section.Rmd>`_]
+[`html <http://www.stanford.edu/class/psych252/section/Week3_Section.html>`_]
+
+The GLM: an example
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+An example of running a glm (with lm()) that has a continuous and categorical (dummy coded) predictors.
+
+[`Rmd <http://www.stanford.edu/class/psych252/section/glm.Rmd>`_]
+[`html <http://www.stanford.edu/class/psych252/section/glm.html>`_]
+
+----------------------------
