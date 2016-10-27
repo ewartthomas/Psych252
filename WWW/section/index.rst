@@ -84,4 +84,41 @@ An example of running a glm (with lm()) that has a continuous and categorical (d
 [`Rmd <http://www.stanford.edu/class/psych252/section/glm.Rmd>`_]
 [`html <http://www.stanford.edu/class/psych252/section/glm.html>`_]
 
+
+----------------------------
+
+
+Week 5
+################
+
+HW 3 Recap
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Check out the materials from 2013 section for more info on HW3.
+
+[`html <http://web.stanford.edu/class/psych252/section_2013/Section4.html>`_]
+
+
+Practice interpreting lm() output
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Some example lm() output, with guided questions for interpreting the output.
+
+[`PDF <http://web.stanford.edu/class/psych252/section/lm_output_prac.pdf>`_]
+
+Visualizing the lm() output:
+
+[`Rmd <http://web.stanford.edu/class/psych252/section/lm_output_prac_plotting.Rmd>`_]
+[`html <http://web.stanford.edu/class/psych252/section/lm_output_prac_plotting.html>`_]
+
+
+Practice deciding what statistical test to use
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Given sample scenarios, decide the best way to statistically test each hypothesis.
+
+[`PDF <http://web.stanford.edu/class/psych252/section/whattest_blank.pdf>`_]
+[`Solutions <http://web.stanford.edu/class/psych252/section/whattest_solutions.pdf>`_]
+
+
 ----------------------------
