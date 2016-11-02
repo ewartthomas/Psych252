@@ -87,6 +87,34 @@ An example of running a glm (with lm()) that has a continuous and categorical (d
 
 ----------------------------
 
+Week 4
+################
+
+Section file
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Working through a complete linear modeling problem.
+
+[`Rmd <http://www.stanford.edu/class/psych252/section/Week4_Section.Rmd>`_]
+[`html <http://www.stanford.edu/class/psych252/section/Week4_Section.html>`_]
+
+Exploring logistic regression
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+[`Tutorial <http://web.stanford.edu/class/psych252/tutorials/Tutorial_LogisticRegression.html>`_]
+
+[`Advanced Tutorial <http://web.stanford.edu/class/psych253/section/section_4/section4.html>`_]
+
+[`Logistic Regression App <https://supsych.shinyapps.io/logistic_regression>`_]: Change the slope and intercept, and see how it changes the fit to the data
+
+
+Collinearity in multiple regression
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+[`Collinearity App <https://gallery.shinyapps.io/collinearity/>`_]: Change the predictor covariance, and see how it changes the magnitude of coefficients in full model
+
+
+----------------------------
 
 Week 5
 ################
@@ -123,32 +151,15 @@ Given sample scenarios, decide the best way to statistically test each hypothesi
 
 ----------------------------
 
-
-Week 4
+Week 6
 ################
 
-Section file
+HW 4, interactions, contrasts, mediation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Working through a complete linear modeling problem.
-
-[`Rmd <http://www.stanford.edu/class/psych252/section/Week4_Section.Rmd>`_]
-[`html <http://www.stanford.edu/class/psych252/section/Week4_Section.html>`_]
-
-Exploring logistic regression
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-[`Tutorial <http://web.stanford.edu/class/psych252/tutorials/Tutorial_LogisticRegression.html>`_]
-
-[`Advanced Tutorial <http://web.stanford.edu/class/psych253/section/section_4/section4.html>`_]
-
-[`Logistic Regression App <https://supsych.shinyapps.io/logistic_regression>`_]: Change the slope and intercept, and see how it changes the fit to the data
-
-
-Collinearity in multiple regression
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-[`Collinearity App <https://gallery.shinyapps.io/collinearity/>`_]: Change the predictor covariance, and see how it changes the magnitude of coefficients in full model
+[`Rmd <http://web.stanford.edu/class/psych252/section/section_week6.Rmd>`_]
+[`html <http://web.stanford.edu/class/psych252/section/section_week6.html>`_]
 
 
 ----------------------------
+
