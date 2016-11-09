@@ -163,3 +163,24 @@ HW 4, interactions, contrasts, mediation
 
 ----------------------------
 
+
+Week 7
+################
+
+Practice with lm
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Example scenarios and lm output; practice creating contrasts, interpreting contrasts, and interpreting lm output
+
+[`PDF <http://web.stanford.edu/class/psych252/section/Week7SectionPractice.pdf>`_]
+
+Practice with mediation & partial correlations
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Walk through mediation and partial correlations using the caffeine dataset.
+
+[`html <http://web.stanford.edu/class/psych252/section/Section_week7.html>`_]
+[`Rmd <http://web.stanford.edu/class/psych252/section/Section_week7.Rmd>`_]
+
+----------------------------
+
