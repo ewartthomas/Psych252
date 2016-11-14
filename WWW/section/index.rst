@@ -184,3 +184,18 @@ Walk through mediation and partial correlations using the caffeine dataset.
 
 ----------------------------
 
+
+Week 8
+################
+
+An introduction to mixed effects models
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Defining the linear mixed effects model, an overview of random intercepts and slopes, testing
+significance of models, model comparison, ML vs. REML estimation, and item effects.
+
+[`html <http://web.stanford.edu/class/psych252/section/Mixed_models_tutorial.html>`_]
+[`Rmd <http://web.stanford.edu/class/psych252/section/Mixed_models_tutorial.Rmd>`_]
+
+----------------------------
+
