@@ -285,3 +285,10 @@ couples1.csv
 Study of couples' interaction quality.
 
 :download:`Click to download data </datasets/couples1.csv>`
+
+ex4.txt
+---------------
+
+2 within-subject factor design for HW5.
+
+:download:`Click to download data </datasets/ex4.txt`
