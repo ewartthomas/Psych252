@@ -291,4 +291,4 @@ ex4.txt
 
 2 within-subject factor design for HW5.
 
-:download:`Click to download data </datasets/ex4.txt`
+:download:`Click to download data </datasets/ex4.txt>`
