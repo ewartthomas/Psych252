@@ -292,3 +292,10 @@ ex4.txt
 2 within-subject factor design for HW5.
 
 :download:`Click to download data </datasets/ex4.txt>`
+
+ex4L.txt
+---------------
+
+A larger version of the 2 within-subject factor design for HW5.
+
+:download:`Click to download data </datasets/ex4L.txt>`
