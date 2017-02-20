@@ -43,6 +43,17 @@ number of observations in a sample to show how these two parameters relate the
 expected distribution of scores. When the effect size is 0, the simulation
 shows what happens when the null hypothesis is true.
 
+Visualizing a 1-way ANOVA
+------------------
+
+`Link to app <https://supsych.shinyapps.io/anova/>`_
+
+This example illustrates the concepts behind a 1-way ANOVA. Change the population means,
+population standard deviation, and sample n for each group, and see how the F statistic changes.
+The plot shows the distributions for the 3 groups, with the sample observations indicated by points.
+Think about how MSb and MSw and the F-statistic change as you increase the variation *within*
+each of the groups vs. increase the variation *between* group means and the grand mean.
+
 Simple linear regression
 ------------------------
 
