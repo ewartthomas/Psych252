@@ -37,8 +37,6 @@ $$wage = \alpha{0} + \delta_0\text{Cfemale } + \alpha_1\text{education} + \epsil
 Plugging in our coefficients we get: $wage = 0.22 + -2.12\text{Cfemale } + 0.75\text{education}$, where `Cfemale` = 1 when the person is a female, and 0 when male (thus, that effect goes to zero if we're trying to figure out the wage of a male).
 In this case, our intercept is the mean wage when education = 0 for our baseline (male) group. The effect of education is controlling for sex, so regardless of sex, an increase in education leads to an increase in wage, $b=0.75, t(531)=9.78, p < 0.001$. Further, controlling for education, relative to the males, females have lower wages, $b=-2.12, t(531)=-5.27, p < 0.001$.
 
-![graph](https://upload.wikimedia.org/wikipedia/commons/7/74/Graph_showing_Wage_%3D_%CE%B10_%2B_%CE%B40female_%2B_%CE%B11education_%2B_U%2C_%CE%B40_0.jpg)
-
 ## Visualize the effects
 
 ```{r}
